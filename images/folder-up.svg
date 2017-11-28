@@ -1,0 +1,9 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none;">
+    <symbol id="folder-up" viewBox="0 0 16 16">
+        <g>
+            <path d="M.53,14H15.47a.53.53,0,0,0,.53-.53V3.87a.53.53,0,0,0-.53-.53H6.84L5.51,2h-5A.53.53,0,0,0,0,2.53V13.47A.53.53,0,0,0,.53,14Z"/>
+            <path fill="#010101" style="opacity:0.16;" d="M.53,4.67h5L6.84,3.33,5.51,2h-5A.53.53,0,0,0,0,2.53V5.2A.53.53,0,0,1,.53,4.67Z"/>
+            <path class="folder-up-icon" fill="currentColor" d="M4.67,8.54l2.5,2.63V9.5H8A3.19,3.19,0,0,1,11.33,12c0-2.45-.83-4.16-4.16-4.16V6.18Z"/>
+        </g>
+    </symbol>
+</svg>

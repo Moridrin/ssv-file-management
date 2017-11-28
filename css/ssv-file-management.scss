@@ -1,0 +1,63 @@
+.item-list {
+
+  tr {
+    padding: 0;
+    border: 0;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+
+    &.selected {
+      background: rgba(0,0,0,0.2);
+    }
+
+    &:hover {
+      background: rgba(0,0,0,0.4);
+    }
+
+    td.item-name {
+      vertical-align: center;
+      padding: 0;
+      cursor: pointer;
+
+      a {
+        line-height: 35px;
+        float: left;
+        color: black;
+      }
+
+      svg {
+        color: #ffffff;
+        fill: #ffb300;
+        width: 35px;
+        height: 35px;
+        float: left;
+        margin: 0 10px;
+      }
+    }
+
+    td.item-actions {
+      vertical-align: center;
+      cursor: pointer;
+
+      svg {
+        color: #ffffff;
+        fill: #ffb300;
+        width: 35px;
+        height: 35px;
+        float: left;
+        margin: 0;
+      }
+    }
+  }
+}
+
+button.inline {
+  width: 35px;
+  padding: 10px 10px;
+  border-radius: 0;
+  border: none;
+}
