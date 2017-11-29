@@ -17,7 +17,6 @@ $relativePathArray = explode(DIRECTORY_SEPARATOR, $relativePath);
 
 $realPath = realpath($base.DIRECTORY_SEPARATOR.$relativePath);
 $realPathArray = explode(DIRECTORY_SEPARATOR, $realPath);
-SSV_General::var_export($relativePath);
 
 if (!mp_ssv_starts_with($realPath, $base) && !current_user_can('administrator')) {
     ?><div class="notification error">You are not allowed to view this folder.</div><?php
