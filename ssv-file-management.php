@@ -13,6 +13,13 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+define('SSV_FILE_MANAGER_ROOT_FOLDER', ABSPATH.'wp-content'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'SSV File Manager');
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require_once 'general/general.php';
 
 function mp_ssv_frontend_file_css()
 {
@@ -41,29 +48,55 @@ function mp_ssv_frontend_file_manager($content) {
 add_filter('the_content', 'mp_ssv_frontend_file_manager');
 
 function mp_ssv_ajax_file_upload() {
-    die('test');
-    $fileErrors = [
-        0 => "There is no error, the file uploaded with success",
-        1 => "The uploaded file exceeds the upload_max_files in server settings",
-        2 => "The uploaded file exceeds the MAX_FILE_SIZE from html form",
-        3 => "The uploaded file uploaded only partially",
-        4 => "No file was uploaded",
-        6 => "Missing a temporary folder",
-        7 => "Failed to write file to disk",
-        8 => "A PHP extension stoped file to upload",
-    ];
-
-    $posted_data =  isset($_POST) ? $_POST : array();
-    $file_data = isset($_FILES) ? $_FILES : array();
-
-    $data = array_merge($posted_data, $file_data);
-    var_dump($data);
-    die();
-}
-add_action('wp_ajax_nopriv_mp_ssv_ajax_file_upload', 'mp_ssv_ajax_file_upload' );
-
-function mp_ssv_ajax_create_folder() {
-    mkdir(ABSPATH.'wp-content'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.$_POST['path'].DIRECTORY_SEPARATOR.$_POST['newFolderName']);
+    $uploadDir = SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR;
+    if (!is_dir($uploadDir)) {
+        echo json_encode(['error' => 'The location to upload is not a directory.']);
+    } elseif (!is_writable($uploadDir)) {
+        echo json_encode(['error' => 'The directory is not writable.']);
+    } else {
+        if (move_uploaded_file($_FILES["file"]["tmp_name"], $uploadDir.$_FILES['file']['name'])) {
+            echo json_encode(['success' => 'success']);
+        } else {
+            echo json_encode(['error' => 'Unknown error.']);
+        }
+    }
     wp_die();
 }
-add_action('wp_ajax_mp_ssv_create_folder', 'mp_ssv_ajax_create_folder' );
+add_action('wp_ajax_mp_ssv_ajax_file_upload', 'mp_ssv_ajax_file_upload' );
+
+function mp_ssv_ajax_create_folder() {
+    mkdir(SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR.$_POST['newFolderName']);
+    wp_die();
+}
+add_action('wp_ajax_mp_ssv_create_folder', 'mp_ssv_ajax_create_folder');
+
+function deleteItem($dirPath) {
+    if (!is_dir($dirPath)) {
+        unlink($dirPath);
+    } else {
+        if (substr($dirPath, strlen($dirPath) - 1, 1) != DIRECTORY_SEPARATOR) {
+            $dirPath .= DIRECTORY_SEPARATOR;
+        }
+        $files = glob($dirPath . '*', GLOB_MARK);
+        foreach ($files as $file) {
+            if (is_dir($file)) {
+                deleteItem($file);
+            } else {
+                unlink($file);
+            }
+        }
+        rmdir($dirPath);
+    }
+}
+
+function mp_ssv_ajax_delete_item() {
+    deleteItem(SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR.$_POST['item']);
+    wp_die();
+}
+add_action('wp_ajax_mp_ssv_delete_item', 'mp_ssv_ajax_delete_item' );
+
+function mp_ssv_ajax_rename_item() {
+    rename(SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR.$_POST['oldItemName'], SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR.$_POST['newItemName']);
+    wp_die();
+}
+add_action('wp_ajax_mp_ssv_rename_item', 'mp_ssv_ajax_rename_item' );

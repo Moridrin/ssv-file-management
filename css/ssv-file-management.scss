@@ -19,7 +19,7 @@
     }
 
     td.item-name {
-      vertical-align: center;
+      vertical-align: middle;
       padding: 0;
       cursor: pointer;
 
@@ -39,18 +39,32 @@
       }
     }
 
-    td.item-actions {
-      vertical-align: center;
+    td.item-actions,
+    td.item-actions-unavailable{
+      vertical-align: middle;
       cursor: pointer;
 
       svg {
-        color: #ffffff;
-        fill: #ffb300;
         width: 35px;
         height: 35px;
         float: left;
         margin: 0;
       }
+    }
+
+    td.item-actions-unavailable svg {
+      visibility: hidden;
+    }
+  }
+}
+
+.notification {
+  &.error {
+    min-height: 30px;
+    line-height: 30px;
+
+    :before {
+      padding: 0;
     }
   }
 }

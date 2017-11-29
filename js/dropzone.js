@@ -2568,6 +2568,7 @@ var Dropzone = function (_Emitter) {
       var progress = void 0;
       if (typeof e !== 'undefined') {
         progress = 100 * e.loaded / e.total;
+        location.reload();
 
         if (files[0].upload.chunked) {
           var file = files[0];

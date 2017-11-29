@@ -2,11 +2,53 @@ jQuery(function ($) {
     let $itemList = $('.item-list');
 
     let contextMenu = {
-        callback: function(key, options) {
-            var m = 'clicked: ' + key;
-            window.console && console.log(m) || alert(m);
+        callback: function(key, data) {
+            if (key === 'delete') {
+                let path = data.$trigger.data('location').split('/');
+                let item = data.$trigger.data('item');
+                $.ajax({
+                    type: "POST",
+                    url: urls.admin,
+                    data: {
+                        'action': 'mp_ssv_delete_item',
+                        'path': path.join('/'),
+                        'item': item,
+                    },
+                    success: function(data) {
+                        location.reload();
+                    }
+                });
+            } else if (key === 'download') {
+                let path = data.$trigger.data('location').split('/');
+                let item = data.$trigger.data('item');
+                $.ajax({
+                    type: "POST",
+                    url: urls.admin,
+                    data: {
+                        'action': 'mp_ssv_download_item',
+                        'path': path.join('/'),
+                        'item': item,
+                    }
+                });
+            } else if (key === 'rename') {
+                let path = data.$trigger.data('location').split('/');
+                let item = data.$trigger.data('item');
+                $.ajax({
+                    type: "POST",
+                    url: urls.admin,
+                    data: {
+                        'action': 'mp_ssv_rename_item',
+                        'path': path.join('/'),
+                        'item': item,
+                    }
+                });
+            } else {
+                var m = 'clicked: ' + key;
+                window.console && console.log(m) || alert(m);
+            }
         },
         items: {
+            'download': {name: 'Download', icon: 'download'},
             'rename': {name: 'Rename', icon: 'edit'},
             'delete': {name: 'Delete', icon: 'delete'},
             'sep1': '---------',
@@ -14,7 +56,7 @@ jQuery(function ($) {
         }
     };
     $itemList.contextMenu({
-        selector: 'tr',
+        selector: 'tr.selectable',
         callback: contextMenu.callback,
         items: contextMenu.items,
     });
@@ -24,8 +66,13 @@ jQuery(function ($) {
         callback: contextMenu.callback,
         items: contextMenu.items,
     });
-    $('[data-folder-location]').dblclick(function () {
-        window.location.href = $(this).data('folder-location');
+    $('.dbclick-navigate').dblclick(function () {
+        let path = '?path=' + $(this).data('location');
+        let item = $(this).data('item');
+        if (item) {
+            path += '/' + $(this).data('item')
+        }
+        window.location.href =  path;
     });
     $('.selectable').click(function () {
         let isSelected = $(this).hasClass('selected');

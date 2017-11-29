@@ -32,12 +32,18 @@
       height: 35px;
       float: left;
       margin: 0 10px; }
-  .item-list tr td.item-actions {
+  .item-list tr td.item-actions,
+  .item-list tr td.item-actions-unavailable{
     vertical-align: center;
     cursor: pointer; }
-    .item-list tr td.item-actions svg {
+  .item-list tr td.item-actions-unavailable svg {
+    width: 35px;
+    height: 35px;
+    float: left;
+    margin: 0;
+    visibility: hidden; }
+.item-list tr td.item-actions svg {
       color: #ffffff;
-      fill: #ffb300;
       width: 35px;
       height: 35px;
       float: left;
@@ -48,5 +54,10 @@ button.inline {
   padding: 10px 10px;
   border-radius: 0;
   border: none;
+}
+
+.notification.error {
+  min-height: 30px;
+  line-height: 30px;
 }
 /*# sourceMappingURL=ssv-file-management.css.map */
