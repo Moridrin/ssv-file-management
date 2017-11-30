@@ -13,7 +13,7 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-define('SSV_FILE_MANAGER_ROOT_FOLDER', ABSPATH.'wp-content'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'SSV File Manager');
+define('SSV_FILE_MANAGER_ROOT_FOLDER', ABSPATH . 'wp-content' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'SSV File Manager');
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -37,7 +37,8 @@ function mp_ssv_frontend_file_css()
 
 add_action('wp_enqueue_scripts', 'mp_ssv_frontend_file_css');
 
-function mp_ssv_frontend_file_manager($content) {
+function mp_ssv_frontend_file_manager($content)
+{
     if (strpos($content, '[ssv_upload]') !== false) {
         ob_start();
         include_once 'file-upload.php';
@@ -45,32 +46,43 @@ function mp_ssv_frontend_file_manager($content) {
     }
     return $content;
 }
+
 add_filter('the_content', 'mp_ssv_frontend_file_manager');
 
-function mp_ssv_ajax_file_upload() {
-    $uploadDir = SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR;
-    if (!is_dir($uploadDir)) {
-        echo json_encode(['error' => 'The location to upload is not a directory.']);
-    } elseif (!is_writable($uploadDir)) {
-        echo json_encode(['error' => 'The directory is not writable.']);
-    } else {
-        if (move_uploaded_file($_FILES["file"]["tmp_name"], $uploadDir.$_FILES['file']['name'])) {
-            echo json_encode(['success' => 'success']);
+function mp_ssv_ajax_file_upload()
+{
+    $uploadDir = realpath(SSV_FILE_MANAGER_ROOT_FOLDER . DIRECTORY_SEPARATOR . $_POST['path'] . DIRECTORY_SEPARATOR);
+    if (mp_ssv_starts_with($uploadDir, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
+        if (!is_dir($uploadDir)) {
+            echo json_encode(['error' => 'The location to upload is not a directory.']);
+        } elseif (!is_writable($uploadDir)) {
+            echo json_encode(['error' => 'The directory is not writable.']);
         } else {
-            echo json_encode(['error' => 'Unknown error.']);
+            if (move_uploaded_file($_FILES["file"]["tmp_name"], $uploadDir . $_FILES['file']['name'])) {
+                echo json_encode(['success' => 'success']);
+            } else {
+                echo json_encode(['error' => 'Unknown error.']);
+            }
         }
+        wp_die();
+    }
+}
+
+add_action('wp_ajax_mp_ssv_ajax_file_upload', 'mp_ssv_ajax_file_upload');
+
+function mp_ssv_ajax_create_folder()
+{
+    $createPath = realpath(SSV_FILE_MANAGER_ROOT_FOLDER . DIRECTORY_SEPARATOR . $_POST['path'] . DIRECTORY_SEPARATOR);
+    if (mp_ssv_starts_with($createPath, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
+        mkdir($createPath . $_POST['newFolderName']);
     }
     wp_die();
 }
-add_action('wp_ajax_mp_ssv_ajax_file_upload', 'mp_ssv_ajax_file_upload' );
 
-function mp_ssv_ajax_create_folder() {
-    mkdir(SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR.$_POST['newFolderName']);
-    wp_die();
-}
 add_action('wp_ajax_mp_ssv_create_folder', 'mp_ssv_ajax_create_folder');
 
-function deleteItem($dirPath) {
+function deleteItem($dirPath)
+{
     if (!is_dir($dirPath)) {
         unlink($dirPath);
     } else {
@@ -89,14 +101,25 @@ function deleteItem($dirPath) {
     }
 }
 
-function mp_ssv_ajax_delete_item() {
-    deleteItem(SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR.$_POST['item']);
+function mp_ssv_ajax_delete_item()
+{
+    $deleteItem = realpath(SSV_FILE_MANAGER_ROOT_FOLDER . DIRECTORY_SEPARATOR . $_POST['path'] . DIRECTORY_SEPARATOR . $_POST['item']);
+    if (mp_ssv_starts_with($deleteItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
+        deleteItem($deleteItem);
+    }
     wp_die();
 }
-add_action('wp_ajax_mp_ssv_delete_item', 'mp_ssv_ajax_delete_item' );
 
-function mp_ssv_ajax_rename_item() {
-    rename(SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR.$_POST['oldItemName'], SSV_FILE_MANAGER_ROOT_FOLDER.$_POST['path'].DIRECTORY_SEPARATOR.$_POST['newItemName']);
+add_action('wp_ajax_mp_ssv_delete_item', 'mp_ssv_ajax_delete_item');
+
+function mp_ssv_ajax_rename_item()
+{
+    $base       = realpath(SSV_FILE_MANAGER_ROOT_FOLDER . DIRECTORY_SEPARATOR . $_POST['path'] . DIRECTORY_SEPARATOR);
+    $renameItem = realpath($base . $_POST['oldItemName']);
+    if (mp_ssv_starts_with($renameItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
+        rename($renameItem, realpath($base . $_POST['newItemName']));
+    }
     wp_die();
 }
-add_action('wp_ajax_mp_ssv_rename_item', 'mp_ssv_ajax_rename_item' );
+
+add_action('wp_ajax_mp_ssv_rename_item', 'mp_ssv_ajax_rename_item');
