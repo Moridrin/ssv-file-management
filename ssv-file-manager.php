@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: SSC File Management
- * Plugin URI: http://moridrin.com/ssv-file-management
+ * Plugin URI: http://moridrin.com/ssv-file-manager
  * Description: This is a plugin to let the members manage files in the frontend of the Sportal.
  * Version: 1.0.0
  * Author: Jeroen Berkvens
@@ -25,13 +25,13 @@ function mp_ssv_frontend_file_css()
 {
     global $post;
     if (strpos($post->post_content, '[ssv_upload]') !== false) {
-        wp_enqueue_style('ssv_dropzone', plugins_url() . '/ssv-file-management/css/dropzone.css');
-        wp_enqueue_style('ssv_frontend_file_management_css', plugins_url() . '/ssv-file-management/css/ssv-file-management.css');
-        wp_enqueue_style('ssv_context_menu', plugins_url() . '/ssv-file-management/css/jquery.contextMenu.css');
-        wp_enqueue_script('ssv_dropzone', plugins_url() . '/ssv-file-management/js/dropzone.js', ['jquery']);
-        wp_enqueue_script('ssv_context_menu', plugins_url() . '/ssv-file-management/js/jquery.contextMenu.js', ['jquery']);
-        wp_enqueue_script('ssv_frontend_file_management_js', plugins_url() . '/ssv-file-management/js/ssv-file-management.js', ['jquery']);
-        wp_localize_script('ssv_frontend_file_management_js', 'urls', ['plugins' => plugins_url(), 'admin' => admin_url('admin-ajax.php')]);
+        wp_enqueue_style('ssv_dropzone', plugins_url() . '/ssv-file-manager/css/dropzone.css');
+        wp_enqueue_style('ssv_frontend_file_manager_css', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
+        wp_enqueue_style('ssv_context_menu', plugins_url() . '/ssv-file-manager/css/jquery.contextMenu.css');
+        wp_enqueue_script('ssv_dropzone', plugins_url() . '/ssv-file-manager/js/dropzone.js', ['jquery']);
+        wp_enqueue_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
+        wp_enqueue_script('ssv_frontend_file_manager_js', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
+        wp_localize_script('ssv_frontend_file_manager_js', 'urls', ['plugins' => plugins_url(), 'admin' => admin_url('admin-ajax.php')]);
     }
 }
 
@@ -41,7 +41,7 @@ function mp_ssv_frontend_file_manager($content)
 {
     if (strpos($content, '[ssv_upload]') !== false) {
         ob_start();
-        include_once 'file-upload.php';
+        include_once 'file-manager.php';
         $content = str_replace('[ssv_upload]', ob_get_clean(), $content);
     }
     return $content;

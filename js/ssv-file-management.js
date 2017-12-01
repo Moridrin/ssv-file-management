@@ -84,12 +84,12 @@ jQuery(function ($) {
     $('#addFolder').click(function () {
         let row = '<tr id="new-folder">' +
             '<td class="item-name">' +
-            '<svg><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-management/images/folder.svg#folder"></use></svg>' +
+            '<svg><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
             '<form id="newFolderForm">' +
             '<input type="hidden" name="action" value="mp_ssv_create_folder">' +
             '<input type="hidden" name="path" value="'+$(this).data('path')+'">' +
             '<input type="text" name="newFolderName" style="height: 35px; width: calc(100% - 90px); float: left;">' +
-            '<button type="submit" class="inline"><svg style="margin: 0; height: 15px; width: 15px;"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-management/images/sprite_icons.svg#apply"></use></svg></button>' +
+            '<button type="submit" class="inline"><svg style="margin: 0; height: 15px; width: 15px;"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-manager/images/sprite_icons.svg#apply"></use></svg></button>' +
             '</form>' +
             '</td>' +
             '<td></td>' +

@@ -23,7 +23,6 @@ if (!mp_ssv_starts_with($realPath, $base) && !current_user_can('administrator'))
 } else {
     $currentFolder = end($realPathArray);
     ?>
-    <h1>/* UNDER CONSTRUCTION *\</h1>
     <div class="row">
         <div class="element column-2">
             <h1 style="display: inline-block"><?=$currentFolder?></h1>
@@ -58,12 +57,12 @@ if (!mp_ssv_starts_with($realPath, $base) && !current_user_can('administrator'))
                     <tr data-location="<?= $folderUp ?>" class="dbclick-navigate">
                         <td class="item-name" title="Parent Folder">
                             <a href="?path=<?= $folderUp ?>">
-                                <svg><use xlink:href="<?=plugins_url()?>/ssv-file-management/images/folder-up.svg#folder-up"></use></svg>
+                                <svg><use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/folder-up.svg#folder-up"></use></svg>
                                 ..
                             </a>
                         </td>
                         <td class="item-actions-unavailable">
-                            <svg style="width: 16px; height: 35px;"><use xlink:href="<?=plugins_url()?>/ssv-file-management/images/sprite_icons.svg#more"></use></svg>
+                            <svg style="width: 16px; height: 35px;"><use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/sprite_icons.svg#more"></use></svg>
                         </td>
                     </tr>
                     <?php
@@ -74,12 +73,12 @@ if (!mp_ssv_starts_with($realPath, $base) && !current_user_can('administrator'))
                         <tr data-location="<?= $relativePath ?>" data-item="<?= $item ?>" class="selectable dbclick-navigate">
                             <td class="item-name" title="<?= $item ?>">
                                 <a href="?path=<?= $relativePath.DIRECTORY_SEPARATOR.$item ?>">
-                                    <svg><use xlink:href="<?=plugins_url()?>/ssv-file-management/images/folder.svg#folder"></use></svg>
+                                    <svg><use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/folder.svg#folder"></use></svg>
                                     <?=$item?>
                                 </a>
                             </td>
                             <td class="item-actions">
-                                <svg style="width: 16px; height: 35px;"><use xlink:href="<?=plugins_url()?>/ssv-file-management/images/sprite_icons.svg#more"></use></svg>
+                                <svg style="width: 16px; height: 35px;"><use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/sprite_icons.svg#more"></use></svg>
                             </td>
                         </tr>
                         <?php
@@ -88,12 +87,12 @@ if (!mp_ssv_starts_with($realPath, $base) && !current_user_can('administrator'))
                         <tr class="selectable" data-location="<?= $relativePath ?>" data-item="<?= $item ?>">
                             <td class="item-name" title="<?= $item ?>">
                                 <a href="#">
-                                    <svg><use xlink:href="<?=plugins_url()?>/ssv-file-management/images/fileapi-upload-button.svg#fileapi-upload-button"></use></svg>
+                                    <svg><use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/fileapi-upload-button.svg#fileapi-upload-button"></use></svg>
                                     <?=$item?>
                                 </a>
                             </td>
                             <td class="item-actions">
-                                <svg style="width: 16px; height: 35px;"><use xlink:href="<?=plugins_url()?>/ssv-file-management/images/sprite_icons.svg#more"></use></svg>
+                                <svg style="width: 16px; height: 35px;"><use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/sprite_icons.svg#more"></use></svg>
                             </td>
                         </tr>
                         <?php
