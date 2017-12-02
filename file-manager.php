@@ -1,7 +1,5 @@
 <?php
 
-use mp_ssv_general\SSV_General;
-
 $base = SSV_FILE_MANAGER_ROOT_FOLDER;
 $baseArray = explode(DIRECTORY_SEPARATOR, $base);
 

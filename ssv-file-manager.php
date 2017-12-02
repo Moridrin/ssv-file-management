@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: SSC File Management
+ * Plugin Name: SSV File Management
  * Plugin URI: http://moridrin.com/ssv-file-manager
  * Description: This is a plugin to let the members manage files in the frontend of the Sportal.
  * Version: 1.0.0
@@ -20,11 +20,12 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once 'general/general.php';
+require_once 'options/options.php';
 
-function mp_ssv_frontend_file_css()
+function mp_ssv_frontend_file_manager_scripts()
 {
     global $post;
-    if (strpos($post->post_content, '[ssv_upload]') !== false) {
+    if (strpos($post->post_content, '[ssv_file_manager]') !== false) {
         wp_enqueue_style('ssv_dropzone', plugins_url() . '/ssv-file-manager/css/dropzone.css');
         wp_enqueue_style('ssv_frontend_file_manager_css', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
         wp_enqueue_style('ssv_context_menu', plugins_url() . '/ssv-file-manager/css/jquery.contextMenu.css');
@@ -35,19 +36,32 @@ function mp_ssv_frontend_file_css()
     }
 }
 
-add_action('wp_enqueue_scripts', 'mp_ssv_frontend_file_css');
+add_action('wp_enqueue_scripts', 'mp_ssv_frontend_file_manager_scripts');
 
-function mp_ssv_frontend_file_manager($content)
+function mp_ssv_backend_file_manager_scripts()
 {
-    if (strpos($content, '[ssv_upload]') !== false) {
+    wp_enqueue_style('ssv_dropzone', plugins_url() . '/ssv-file-manager/css/dropzone.css');
+    wp_enqueue_style('ssv_frontend_file_manager_css', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
+    wp_enqueue_style('ssv_context_menu', plugins_url() . '/ssv-file-manager/css/jquery.contextMenu.css');
+    wp_enqueue_script('ssv_dropzone', plugins_url() . '/ssv-file-manager/js/dropzone.js', ['jquery']);
+    wp_enqueue_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
+    wp_enqueue_script('ssv_frontend_file_manager_js', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
+    wp_localize_script('ssv_frontend_file_manager_js', 'urls', ['plugins' => plugins_url(), 'admin' => admin_url('admin-ajax.php')]);
+}
+
+add_action('admin_enqueue_scripts', 'mp_ssv_backend_file_manager_scripts');
+
+function mp_ssv_frontend_file_manager_filter($content)
+{
+    if (strpos($content, '[ssv_file_manager]') !== false) {
         ob_start();
         include_once 'file-manager.php';
-        $content = str_replace('[ssv_upload]', ob_get_clean(), $content);
+        $content = str_replace('[ssv_file_manager]', ob_get_clean(), $content);
     }
     return $content;
 }
 
-add_filter('the_content', 'mp_ssv_frontend_file_manager');
+add_filter('the_content', 'mp_ssv_frontend_file_manager_filter');
 
 function mp_ssv_ajax_file_upload()
 {

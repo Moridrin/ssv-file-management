@@ -10,7 +10,7 @@ function ssv_add_ssv_file_manager_options()
     add_submenu_page('ssc_settings', 'File Manager Options', 'File Manager', 'manage_options', 'ssv-file-manager-settings', 'ssv_file_manager_options_page_content');
 }
 
-function ssv_events_options_page_content()
+function ssv_file_manager_options_page_content()
 {
     $active_tab = "general";
     if (isset($_GET['tab'])) {
@@ -18,7 +18,7 @@ function ssv_events_options_page_content()
     }
     ?>
     <div class="wrap">
-        <h1>Events Options</h1>
+        <h1>File Manager Options</h1>
         <h2 class="nav-tab-wrapper">
             <a href="?page=<?= esc_html($_GET['page']) ?>&tab=general" class="nav-tab <?= SSV_General::currentNavTab($active_tab, 'general') ?>">General</a>
             <a href="?page=<?= esc_html($_GET['page']) ?>&tab=email" class="nav-tab <?= SSV_General::currentNavTab($active_tab, 'email') ?>">Email</a>
@@ -38,7 +38,7 @@ add_action('admin_menu', 'ssv_add_ssv_file_manager_options');
 
 function ssv_file_manager_general_options_page_content()
 {
-    ?><h2><a href="?page=<?= __FILE__ ?>">Events Options</a></h2><?php
+    ?><h2><a href="?page=<?= __FILE__ ?>">File Manager Options</a></h2><?php
 }
 
 add_action(SSV_General::HOOK_GENERAL_OPTIONS_PAGE_CONTENT, 'ssv_file_manager_general_options_page_content');
