@@ -10,10 +10,12 @@
  * License URI: http://www.wtfpl.net/txt/copying/
  */
 
+use mp_ssv_general\SSV_General;
+
 if (!defined('ABSPATH')) {
     exit;
 }
-define('SSV_FILE_MANAGER_ROOT_FOLDER', ABSPATH . 'wp-content' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'SSV File Manager');
+define('SSV_FILE_MANAGER_ROOT_FOLDER', realpath(ABSPATH . 'wp-content' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'SSV File Manager'));
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -21,6 +23,7 @@ error_reporting(E_ALL);
 
 require_once 'general/general.php';
 require_once 'options/options.php';
+require_once 'ajax/file-manager.php';
 
 function mp_ssv_frontend_file_manager_scripts()
 {
@@ -32,7 +35,13 @@ function mp_ssv_frontend_file_manager_scripts()
         wp_enqueue_script('ssv_dropzone', plugins_url() . '/ssv-file-manager/js/dropzone.js', ['jquery']);
         wp_enqueue_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
         wp_enqueue_script('ssv_frontend_file_manager_js', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
-        wp_localize_script('ssv_frontend_file_manager_js', 'urls', ['plugins' => plugins_url(), 'admin' => admin_url('admin-ajax.php')]);
+        wp_enqueue_script('ssv_file_download', plugins_url() . '/ssv-file-manager/js/jquery.fileDownload.js', ['jquery']);
+        wp_localize_script('ssv_frontend_file_manager_js', 'urls', [
+                'plugins' => plugins_url(),
+                'admin' => admin_url('admin-ajax.php'),
+                'base' => get_home_url(),
+                'basePath' => ABSPATH,
+        ]);
     }
 }
 
@@ -55,7 +64,24 @@ function mp_ssv_frontend_file_manager_filter($content)
 {
     if (strpos($content, '[ssv_file_manager]') !== false) {
         ob_start();
-        include_once 'file-manager.php';
+        ?>
+        <div class="row">
+            <div id="fileManager" class="element column-2"></div>
+            <div class="element column-2">
+                <h1>Add Items</h1>
+                <form action="<?= admin_url('admin-ajax.php') ?>" class="dropzone">
+                    <input name="action" type="hidden" value="mp_ssv_ajax_file_upload"/>
+                    <input name="path" type="hidden" value="<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>"/>
+                    <div class="fallback">
+                        <input name="file" type="file" multiple/>
+                    </div>
+                </form>
+            </div>
+            <script>
+                fileManagerInit('fileManager', '<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>');
+            </script>
+        </div>
+        <?php
         $content = str_replace('[ssv_file_manager]', ob_get_clean(), $content);
     }
     return $content;
@@ -82,7 +108,7 @@ function mp_ssv_ajax_file_upload()
     }
 }
 
-add_action('wp_ajax_mp_ssv_ajax_file_upload', 'mp_ssv_ajax_file_upload');
+add_action('wp_ajax_mp_ssv_file_upload', 'mp_ssv_ajax_file_upload');
 
 function mp_ssv_ajax_create_folder()
 {
@@ -117,7 +143,8 @@ function deleteItem($dirPath)
 
 function mp_ssv_ajax_delete_item()
 {
-    $deleteItem = realpath(SSV_FILE_MANAGER_ROOT_FOLDER . DIRECTORY_SEPARATOR . $_POST['path'] . DIRECTORY_SEPARATOR . $_POST['item']);
+    $base        = realpath($_POST['path']);
+    $deleteItem = $base . DIRECTORY_SEPARATOR . $_POST['item'];
     if (mp_ssv_starts_with($deleteItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
         deleteItem($deleteItem);
     }
@@ -128,10 +155,13 @@ add_action('wp_ajax_mp_ssv_delete_item', 'mp_ssv_ajax_delete_item');
 
 function mp_ssv_ajax_rename_item()
 {
-    $base       = realpath(SSV_FILE_MANAGER_ROOT_FOLDER . DIRECTORY_SEPARATOR . $_POST['path'] . DIRECTORY_SEPARATOR);
-    $renameItem = realpath($base . $_POST['oldItemName']);
-    if (mp_ssv_starts_with($renameItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
-        rename($renameItem, realpath($base . $_POST['newItemName']));
+    $base        = realpath($_POST['path']);
+    $currentItem = $base . DIRECTORY_SEPARATOR . $_POST['oldItemName'];
+    $newItem     = $base . DIRECTORY_SEPARATOR . $_POST['newItemName'];
+    if (mp_ssv_starts_with($currentItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
+        echo json_encode(rename($currentItem, $newItem));
+    } else {
+        echo json_encode(false);
     }
     wp_die();
 }

@@ -18,13 +18,15 @@
   .item-list tr:hover {
     background: rgba(0, 0, 0, 0.4); }
   .item-list tr td.item-name {
-    vertical-align: center;
+    vertical-align: middle;
     padding: 0;
     cursor: pointer; }
-    .item-list tr td.item-name a {
+    .item-list tr td.item-name span {
       line-height: 35px;
       float: left;
       color: black; }
+    .item-list tr td.item-name input {
+      padding: 0; }
     .item-list tr td.item-name svg {
       color: #ffffff;
       fill: #ffb300;
@@ -33,31 +35,28 @@
       float: left;
       margin: 0 10px; }
   .item-list tr td.item-actions,
-  .item-list tr td.item-actions-unavailable{
-    vertical-align: center;
+  .item-list tr td.item-actions-unavailable {
+    vertical-align: middle;
     cursor: pointer; }
-  .item-list tr td.item-actions-unavailable svg {
-    width: 35px;
-    height: 35px;
-    float: left;
-    margin: 0;
-    visibility: hidden; }
-.item-list tr td.item-actions svg {
-      color: #ffffff;
+    .item-list tr td.item-actions svg,
+    .item-list tr td.item-actions-unavailable svg {
       width: 35px;
       height: 35px;
       float: left;
       margin: 0; }
+  .item-list tr td.item-actions-unavailable svg {
+    visibility: hidden; }
+
+.notification.error {
+  min-height: 30px;
+  line-height: 30px; }
+  .notification.error :before {
+    padding: 0; }
 
 button.inline {
   width: 35px;
   padding: 10px 10px;
   border-radius: 0;
-  border: none;
-}
+  border: none; }
 
-.notification.error {
-  min-height: 30px;
-  line-height: 30px;
-}
 /*# sourceMappingURL=ssv-file-manager.css.map */

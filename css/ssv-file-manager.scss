@@ -23,10 +23,14 @@
       padding: 0;
       cursor: pointer;
 
-      a {
+      span {
         line-height: 35px;
         float: left;
         color: black;
+      }
+
+      input {
+        padding: 0;
       }
 
       svg {
