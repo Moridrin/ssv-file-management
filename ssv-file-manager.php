@@ -35,13 +35,16 @@ function mp_ssv_frontend_file_manager_scripts()
         wp_enqueue_script('ssv_dropzone', plugins_url() . '/ssv-file-manager/js/dropzone.js', ['jquery']);
         wp_enqueue_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
         wp_enqueue_script('ssv_frontend_file_manager_js', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
-        wp_enqueue_script('ssv_file_download', plugins_url() . '/ssv-file-manager/js/jquery.fileDownload.js', ['jquery']);
-        wp_localize_script('ssv_frontend_file_manager_js', 'urls', [
-                'plugins' => plugins_url(),
-                'admin' => admin_url('admin-ajax.php'),
-                'base' => get_home_url(),
+        wp_localize_script(
+            'ssv_frontend_file_manager_js',
+            'urls',
+            [
+                'plugins'  => plugins_url(),
+                'admin'    => admin_url('admin-ajax.php'),
+                'base'     => get_home_url(),
                 'basePath' => ABSPATH,
-        ]);
+            ]
+        );
     }
 }
 
@@ -65,24 +68,26 @@ function mp_ssv_frontend_file_manager_filter($content)
     if (strpos($content, '[ssv_file_manager]') !== false) {
         ob_start();
         ?>
-        <div class="row">
-            <div id="fileManager" class="element column-2"></div>
-            <div class="element column-2">
-                <h1>Add Items</h1>
-                <form action="<?= admin_url('admin-ajax.php') ?>" class="dropzone">
-                    <input name="action" type="hidden" value="mp_ssv_ajax_file_upload"/>
-                    <input name="path" type="hidden" value="<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>"/>
-                    <div class="fallback">
-                        <input name="file" type="file" multiple/>
-                    </div>
-                </form>
-            </div>
-            <script>
-                fileManagerInit('fileManager', '<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>');
-            </script>
-        </div>
+        <div id="fileManager"></div>
+        <script>
+            fileManagerInit('fileManager', '<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>');
+        </script>
         <?php
         $content = str_replace('[ssv_file_manager]', ob_get_clean(), $content);
+    }
+    if (strpos($content, '[ssv_file_manager_upload]') !== false) {
+        ob_start();
+        ?>
+        <h1>Add Items</h1>
+        <form action="<?= admin_url('admin-ajax.php') ?>" class="dropzone">
+            <input name="action" type="hidden" value="mp_ssv_ajax_file_upload"/>
+            <input name="path" type="hidden" value="<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>"/>
+            <div class="fallback">
+                <input name="file" type="file" multiple/>
+            </div>
+        </form>
+        <?php
+        $content = str_replace('[ssv_file_manager_upload]', ob_get_clean(), $content);
     }
     return $content;
 }
@@ -112,9 +117,11 @@ add_action('wp_ajax_mp_ssv_file_upload', 'mp_ssv_ajax_file_upload');
 
 function mp_ssv_ajax_create_folder()
 {
-    $createPath = realpath(SSV_FILE_MANAGER_ROOT_FOLDER . DIRECTORY_SEPARATOR . $_POST['path'] . DIRECTORY_SEPARATOR);
+    $createPath = realpath($_POST['path']);
+    var_export($createPath);
+    var_export($createPath . DIRECTORY_SEPARATOR . $_POST['newFolderName']);
     if (mp_ssv_starts_with($createPath, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
-        mkdir($createPath . $_POST['newFolderName']);
+        mkdir($createPath . DIRECTORY_SEPARATOR . $_POST['newFolderName']);
     }
     wp_die();
 }
@@ -143,7 +150,7 @@ function deleteItem($dirPath)
 
 function mp_ssv_ajax_delete_item()
 {
-    $base        = realpath($_POST['path']);
+    $base       = realpath($_POST['path']);
     $deleteItem = $base . DIRECTORY_SEPARATOR . $_POST['item'];
     if (mp_ssv_starts_with($deleteItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
         deleteItem($deleteItem);

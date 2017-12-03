@@ -85,9 +85,9 @@ function mp_ssv_ajax_file_manager()
                     <?php
                 } elseif ($settings['showFiles']) {
                     ?>
-                    <tr class="selectable" data-location="<?= $path ?>" data-item="<?= $item ?>">
+                    <tr class="selectable dbclick-download" data-location="<?= $path ?>" data-item="<?= $item ?>">
                         <td class="item-name" title="<?= $item ?>">
-                            <span data-location="<?= $path ?>" data-item="<?= $item ?>">
+                            <span>
                                 <svg>
                                     <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/fileapi-upload-button.svg#fileapi-upload-button"></use>
                                 </svg>
@@ -111,3 +111,4 @@ function mp_ssv_ajax_file_manager()
 }
 
 add_action('wp_ajax_mp_ssv_ajax_file_manager', 'mp_ssv_ajax_file_manager');
+add_action('wp_ajax_nopriv_mp_ssv_ajax_file_manager', 'mp_ssv_ajax_file_manager');

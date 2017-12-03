@@ -44,20 +44,15 @@ function fileManagerLoaded($fileManager) {
                         }
                     });
                 } else if (key === 'download') {
-                    let path = data.$trigger.data('location').split('/');
+                    let path = data.$trigger.data('location');
                     let item = data.$trigger.data('item');
-                    console.log(urls.base);
-                    console.log(urls.basePath);
-                    $.fileDownload(path + '/' + item);
-                    // $.ajax({
-                    //     type: "POST",
-                    //     url: urls.admin,
-                    //     data: {
-                    //         'action': 'mp_ssv_download_item',
-                    //         'path': path.join('/'),
-                    //         'item': item,
-                    //     }
-                    // });
+                    path = path.replace(urls.basePath, '');
+                    let a = $("<a>")
+                        .attr("href", urls.base + '/' + path + '/' + item)
+                        .attr("download", item)
+                        .appendTo("body");
+                    a[0].click();
+                    a.remove();
                 } else if (key === 'rename') {
                     let oldName = data.$trigger.find('span span').text();
                     let row = '<tr id="rename-item">' +
@@ -97,13 +92,7 @@ function fileManagerLoaded($fileManager) {
             items: {
                 'download': {name: 'Download', icon: 'download'},
                 'rename': {name: 'Rename', icon: 'edit'},
-                'delete': {name: 'Delete', icon: 'delete'},
-                'sep1': '---------',
-                'quit': {
-                    name: 'Quit', icon: function ($element, key, item) {
-                        return 'context-menu-icon context-menu-icon-quit';
-                    }
-                }
+                'delete': {name: 'Delete', icon: 'delete'}
             }
         };
         $('ul.context-menu-root').remove();
@@ -137,6 +126,17 @@ function fileManagerLoaded($fileManager) {
                 }
             });
         });
+        $('.dbclick-download').dblclick(function () {
+            let path = $(this).data('location');
+            let item = $(this).data('item');
+            path = path.replace(urls.basePath, '');
+            let a = $("<a>")
+                .attr("href", urls.base + '/' + path + '/' + item)
+                .attr("download", item)
+                .appendTo("body");
+            a[0].click();
+            a.remove();
+        });
         $fileManager.find('tr td span[data-location]').click(function () {
             if ($(this).has('form').length === 0) {
                 let path = $(this).data('location');
@@ -148,7 +148,7 @@ function fileManagerLoaded($fileManager) {
                     method: 'POST',
                     url: urls.admin,
                     data: {
-                        'action': 'mp_ssv_ajax_rename_item',
+                        'action': 'mp_ssv_ajax_file_manager',
                         'path': path,
                     },
                     success: function (data) {
@@ -166,12 +166,13 @@ function fileManagerLoaded($fileManager) {
             }
         });
         $('#addFolder').click(function () {
+            let path = $(this).data('path');
             let row = '<tr id="new-folder">' +
                 '<td class="item-name">' +
                 '<svg><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
                 '<form id="newFolderForm">' +
                 '<input type="hidden" name="action" value="mp_ssv_create_folder">' +
-                '<input type="hidden" name="path" value="' + $(this).data('path') + '">' +
+                '<input type="hidden" name="path" value="' + path + '">' +
                 '<input type="text" name="newFolderName" style="height: 35px; width: calc(100% - 90px); float: left;">' +
                 '<button type="submit" class="inline"><svg style="margin: 0; height: 15px; width: 15px;"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-manager/images/sprite_icons.svg#apply"></use></svg></button>' +
                 '</form>' +
@@ -186,7 +187,7 @@ function fileManagerLoaded($fileManager) {
                     url: urls.admin,
                     data: $("#newFolderForm").serialize(),
                     success: function (data) {
-                        location.reload();
+                        updateFileManager($fileManager, path);
                     }
                 });
             });
