@@ -33,6 +33,7 @@ function mp_ssv_frontend_file_manager_scripts()
         wp_enqueue_style('ssv_frontend_file_manager_css', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
         wp_enqueue_style('ssv_context_menu', plugins_url() . '/ssv-file-manager/css/jquery.contextMenu.css');
         wp_enqueue_script('ssv_dropzone', plugins_url() . '/ssv-file-manager/js/dropzone.js', ['jquery']);
+//        wp_enqueue_script('ssv_file_upload', plugins_url() . '/ssv-file-manager/js/ssv-file-manager-init.js', ['jquery']);
         wp_enqueue_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
         wp_enqueue_script('ssv_frontend_file_manager_js', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
         wp_localize_script(
