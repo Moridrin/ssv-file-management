@@ -30,10 +30,9 @@ function mp_ssv_frontend_file_manager_scripts()
     global $post;
     if (strpos($post->post_content, '[ssv_file_manager]') !== false) {
         wp_enqueue_style('ssv_dropzone', plugins_url() . '/ssv-file-manager/css/dropzone.css');
-        wp_enqueue_style('ssv_frontend_file_manager_css', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
         wp_enqueue_style('ssv_context_menu', plugins_url() . '/ssv-file-manager/css/jquery.contextMenu.css');
+        wp_enqueue_style('ssv_frontend_file_manager_css', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
         wp_enqueue_script('ssv_dropzone', plugins_url() . '/ssv-file-manager/js/dropzone.js', ['jquery']);
-//        wp_enqueue_script('ssv_file_upload', plugins_url() . '/ssv-file-manager/js/ssv-file-manager-init.js', ['jquery']);
         wp_enqueue_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
         wp_enqueue_script('ssv_frontend_file_manager_js', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
         wp_localize_script(
@@ -80,8 +79,8 @@ function mp_ssv_frontend_file_manager_filter($content)
         ob_start();
         ?>
         <h1>Add Items</h1>
-        <form action="<?= admin_url('admin-ajax.php') ?>" class="dropzone">
-            <input name="action" type="hidden" value="mp_ssv_ajax_file_upload"/>
+        <form id="uploadFile" action="<?= admin_url('admin-ajax.php') ?>" class="dropzone">
+            <input name="action" type="hidden" value="mp_ssv_file_upload"/>
             <input name="path" type="hidden" value="<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>"/>
             <div class="fallback">
                 <input name="file" type="file" multiple/>
@@ -97,21 +96,21 @@ add_filter('the_content', 'mp_ssv_frontend_file_manager_filter');
 
 function mp_ssv_ajax_file_upload()
 {
-    $uploadDir = realpath(SSV_FILE_MANAGER_ROOT_FOLDER . DIRECTORY_SEPARATOR . $_POST['path'] . DIRECTORY_SEPARATOR);
+    $uploadDir = realpath($_POST['path']);
     if (mp_ssv_starts_with($uploadDir, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
         if (!is_dir($uploadDir)) {
             echo json_encode(['error' => 'The location to upload is not a directory.']);
         } elseif (!is_writable($uploadDir)) {
             echo json_encode(['error' => 'The directory is not writable.']);
         } else {
-            if (move_uploaded_file($_FILES["file"]["tmp_name"], $uploadDir . $_FILES['file']['name'])) {
+            if (move_uploaded_file($_FILES["file"]["tmp_name"], $uploadDir . DIRECTORY_SEPARATOR . $_FILES['file']['name'])) {
                 echo json_encode(['success' => 'success']);
             } else {
                 echo json_encode(['error' => 'Unknown error.']);
             }
         }
-        wp_die();
     }
+    wp_die();
 }
 
 add_action('wp_ajax_mp_ssv_file_upload', 'mp_ssv_ajax_file_upload');
@@ -119,8 +118,6 @@ add_action('wp_ajax_mp_ssv_file_upload', 'mp_ssv_ajax_file_upload');
 function mp_ssv_ajax_create_folder()
 {
     $createPath = realpath($_POST['path']);
-    var_export($createPath);
-    var_export($createPath . DIRECTORY_SEPARATOR . $_POST['newFolderName']);
     if (mp_ssv_starts_with($createPath, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
         mkdir($createPath . DIRECTORY_SEPARATOR . $_POST['newFolderName']);
     }

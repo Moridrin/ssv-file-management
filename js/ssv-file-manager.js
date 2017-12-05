@@ -1,4 +1,5 @@
-function updateFileManager($fileManager, path) {
+let $fileManager;
+function updateFileManager(path) {
     jQuery(function ($) {
         $.ajax({
             method: 'POST',
@@ -17,12 +18,12 @@ function updateFileManager($fileManager, path) {
 
 function fileManagerInit(fileManagerId, path) {
     jQuery(function ($) {
-        let $fileManager = $('#' + fileManagerId);
-        updateFileManager($fileManager, path);
+        $fileManager = $('#' + fileManagerId);
+        updateFileManager(path);
     });
 }
 
-function fileManagerLoaded($fileManager) {
+function fileManagerLoaded() {
     jQuery(function ($) {
         let $itemList = $fileManager.find('.item-list');
 
@@ -40,7 +41,7 @@ function fileManagerLoaded($fileManager) {
                             'item': item,
                         },
                         success: function (data) {
-                            updateFileManager($fileManager, $itemList.data('path'));
+                            updateFileManager($itemList.data('path'));
                         }
                     });
                 } else if (key === 'download') {
@@ -80,7 +81,7 @@ function fileManagerLoaded($fileManager) {
                             url: urls.admin,
                             data: $("#renameForm").serialize(),
                             success: function (data) {
-                                updateFileManager($fileManager, $itemList.data('path'));
+                                updateFileManager($itemList.data('path'));
                             }
                         });
                     });
@@ -187,10 +188,20 @@ function fileManagerLoaded($fileManager) {
                     url: urls.admin,
                     data: $("#newFolderForm").serialize(),
                     success: function (data) {
-                        updateFileManager($fileManager, path);
+                        updateFileManager(path);
                     }
                 });
             });
         });
     });
 }
+Dropzone.options.uploadFile = {
+    init: function() {
+        this.on("success", function(file) {
+            let path = $fileManager.children('.item-list').data('path');
+            updateFileManager(path);
+            this.removeAllFiles();
+        });
+    }
+};
+
