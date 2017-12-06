@@ -81,7 +81,7 @@ function mp_ssv_frontend_file_manager_filter($content)
         <h1>Add Items</h1>
         <form id="uploadFile" action="<?= admin_url('admin-ajax.php') ?>" class="dropzone">
             <input name="action" type="hidden" value="mp_ssv_file_upload"/>
-            <input name="path" type="hidden" value="<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>"/>
+            <input id="uploadPath" name="path" type="hidden" value="<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>"/>
             <div class="fallback">
                 <input name="file" type="file" multiple/>
             </div>

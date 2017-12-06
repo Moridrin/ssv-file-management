@@ -159,13 +159,6 @@ function fileManagerLoaded() {
                 });
             }
         });
-        $fileManager.find('.selectable').click(function () {
-            let isSelected = $(this).hasClass('selected');
-            $('.selectable.selected').removeClass('selected');
-            if (!isSelected) {
-                $(this).addClass('selected');
-            }
-        });
         $('#addFolder').click(function () {
             let path = $(this).data('path');
             let row = '<tr id="new-folder">' +
@@ -193,6 +186,7 @@ function fileManagerLoaded() {
                 });
             });
         });
+        $('#uploadPath').val($fileManager.children('.item-list').data('path'));
     });
 }
 Dropzone.options.uploadFile = {
@@ -204,4 +198,3 @@ Dropzone.options.uploadFile = {
         });
     }
 };
-
