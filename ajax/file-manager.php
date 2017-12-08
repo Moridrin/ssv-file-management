@@ -1,15 +1,20 @@
 <?php
 
+use mp_ssv_general\SSV_General;
+
 function mp_ssv_ajax_file_manager()
 {
-    $settings  = [
-        'path'         => SSV_FILE_MANAGER_ROOT_FOLDER,
-        'showFolderUp' => true,
-        'showFolders'  => true,
-        'showFiles'    => true,
+    $options  = $_POST['options'] + [
+        'showFolderUp'      => true,
+        'showFolders'       => true,
+        'showFiles'         => true,
+        'selectableFiles'   => true,
+        'selectableFolders' => true,
     ];
-    $settings  = array_merge($settings, array_intersect_key($_POST, $settings));
-    $path      = realpath($settings['path']);
+    foreach ($options as &$option) {
+        $option = filter_var($option, FILTER_VALIDATE_BOOLEAN);
+    }
+    $path      = realpath(isset($_POST['path']) ? $_POST['path'] : SSV_FILE_MANAGER_ROOT_FOLDER);
     $pathArray = explode(DIRECTORY_SEPARATOR, $path);
 
     if (!mp_ssv_starts_with($path, SSV_FILE_MANAGER_ROOT_FOLDER) && !current_user_can('administrator')) {
@@ -19,11 +24,13 @@ function mp_ssv_ajax_file_manager()
     } else {
         ?>
         <h1 id="currentFolderTitle" style="display: inline-block"><?= end($pathArray) ?></h1>
-        <button id="addFolder" style="float: right" data-path="<?= $path ?>">Add Folder</button>
+        <button id="addFolder" class="button button-primary" style="float: right" data-path="<?= $path ?>">Add Folder</button>
         <br/>
-        <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" data-path="<?= $path ?>">
-            <col width="auto"/>
-            <col width="36px"/>
+        <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" data-path="<?= $path ?>" style="width: 100%;">
+            <colgroup>
+                <col width="auto"/>
+                <col width="36px"/>
+            </colgroup>
             <?php
             $items = array_diff(scandir($path), ['.', '..']);
             usort(
@@ -42,7 +49,7 @@ function mp_ssv_ajax_file_manager()
                     }
                 }
             );
-            if ($path !== SSV_FILE_MANAGER_ROOT_FOLDER && $settings['showFolderUp']) {
+            if ($options['showFolderUp'] && $path !== SSV_FILE_MANAGER_ROOT_FOLDER) {
                 $parentPathArray = $pathArray;
                 array_pop($parentPathArray);
                 $folderUp = implode(DIRECTORY_SEPARATOR, $parentPathArray);
@@ -57,7 +64,7 @@ function mp_ssv_ajax_file_manager()
                         </span>
                     </td>
                     <td class="item-actions-unavailable">
-                        <svg style="width: 16px; height: 35px;">
+                        <svg>
                             <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
                         </svg>
                     </td>
@@ -65,9 +72,9 @@ function mp_ssv_ajax_file_manager()
                 <?php
             }
             foreach ($items as $item) {
-                if ($settings['showFolders'] && is_dir($path . DIRECTORY_SEPARATOR . $item)) {
+                if ($options['showFolders'] && is_dir($path . DIRECTORY_SEPARATOR . $item)) {
                     ?>
-                    <tr data-location="<?= $path ?>" data-item="<?= $item ?>" class="selectable dbclick-navigate">
+                    <tr class="<?= $options['selectableFolders'] ? 'selectable ' : '' ?>dbclick-navigate folder" data-location="<?= $path ?>" data-item="<?= $item ?>">
                         <td class="item-name" title="<?= $item ?>">
                             <span data-location="<?= $path ?>" data-item="<?= $item ?>">
                                 <svg>
@@ -77,15 +84,15 @@ function mp_ssv_ajax_file_manager()
                             </span>
                         </td>
                         <td class="item-actions">
-                            <svg style="width: 16px; height: 35px;">
+                            <svg>
                                 <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
                             </svg>
                         </td>
                     </tr>
                     <?php
-                } elseif ($settings['showFiles']) {
+                } elseif ($options['showFiles']) {
                     ?>
-                    <tr class="selectable dbclick-download" data-location="<?= $path ?>" data-item="<?= $item ?>">
+                    <tr class="<?= $options['selectableFiles'] ? 'selectable ' : '' ?>dbclick-download file" data-location="<?= $path ?>" data-item="<?= $item ?>">
                         <td class="item-name" title="<?= $item ?>">
                             <span>
                                 <svg>
@@ -95,7 +102,7 @@ function mp_ssv_ajax_file_manager()
                             </span>
                         </td>
                         <td class="item-actions">
-                            <svg style="width: 16px; height: 35px;">
+                            <svg>
                                 <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
                             </svg>
                         </td>

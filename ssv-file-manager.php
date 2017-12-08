@@ -25,10 +25,14 @@ require_once 'general/general.php';
 require_once 'options/options.php';
 require_once 'ajax/file-manager.php';
 
-function mp_ssv_frontend_file_manager_scripts()
+function mp_ssv_frontend_file_manager_scripts($hook)
 {
     global $post;
-    if (strpos($post->post_content, '[ssv_file_manager]') !== false) {
+    if (
+            (isset($post) && (strpos($post->post_content, '[ssv_file_manager]') !== false))
+            ||
+            (is_admin() && ($hook === 'ssv-options_page_ssv-file-manager-settings'))
+    ) {
         wp_enqueue_style('ssv_dropzone', plugins_url() . '/ssv-file-manager/css/dropzone.css');
         wp_enqueue_style('ssv_context_menu', plugins_url() . '/ssv-file-manager/css/jquery.contextMenu.css');
         wp_enqueue_style('ssv_frontend_file_manager_css', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
@@ -49,19 +53,7 @@ function mp_ssv_frontend_file_manager_scripts()
 }
 
 add_action('wp_enqueue_scripts', 'mp_ssv_frontend_file_manager_scripts');
-
-function mp_ssv_backend_file_manager_scripts()
-{
-    wp_enqueue_style('ssv_dropzone', plugins_url() . '/ssv-file-manager/css/dropzone.css');
-    wp_enqueue_style('ssv_frontend_file_manager_css', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
-    wp_enqueue_style('ssv_context_menu', plugins_url() . '/ssv-file-manager/css/jquery.contextMenu.css');
-    wp_enqueue_script('ssv_dropzone', plugins_url() . '/ssv-file-manager/js/dropzone.js', ['jquery']);
-    wp_enqueue_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
-    wp_enqueue_script('ssv_frontend_file_manager_js', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
-    wp_localize_script('ssv_frontend_file_manager_js', 'urls', ['plugins' => plugins_url(), 'admin' => admin_url('admin-ajax.php')]);
-}
-
-add_action('admin_enqueue_scripts', 'mp_ssv_backend_file_manager_scripts');
+add_action('admin_enqueue_scripts', 'mp_ssv_frontend_file_manager_scripts');
 
 function mp_ssv_frontend_file_manager_filter($content)
 {

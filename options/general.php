@@ -19,13 +19,21 @@ $roles = SSV_General::getRoles();
 ?>
 <form method="post" action="#">
     <table class="form-table">
+        <colgroup>
+            <col width="250px"/>
+            <col width="auto"/>
+            <col width="50px"/>
+        </colgroup>
         <tr>
-            <th scope="row">
+            <td scope="row">
                 <label for="columns">Role</label>
-            </th>
-            <th scope="row">
+            </td>
+            <td scope="row">
                 <label for="columns">Customizer Columns</label>
-            </th>
+            </td>
+            <td scope="row">
+                <label for="columns">Save</label>
+            </td>
         </tr>
         <tr>
             <td>
@@ -42,34 +50,23 @@ $roles = SSV_General::getRoles();
                 </select>
             </td>
             <td>
-                <table class="item-list" cellspacing="0" cellpadding="0" style="width: 100%;">
-                    <col width="auto"/>
-                    <col width="36px"/>
-                    <?php
-                    $realPath = $relativePath = $base = SSV_FILE_MANAGER_ROOT_FOLDER;
-                    $items = array_diff(scandir($realPath), ['.', '..']);
-                    array_filter($items, function ($item) use ($realPath) {
-                       return is_dir($realPath.DIRECTORY_SEPARATOR.$item);
+                <div id="fileManager"></div>
+                <script>
+                    fileManagerInit('fileManager', '<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>', {
+                        showFiles: false,
+                        showFolders: true,
+                        allowCreateFolder: true,
+                        allowDownload: false,
+                        allowRename: true,
+                        allowDelete: true,
+                        selectableFolders: true,
+                        selectableFiles: false,
+                        multiSelect: false,
                     });
-                    foreach ($items as $item) {
-                        if (is_dir($realPath.DIRECTORY_SEPARATOR.$item)) {
-                            ?>
-                            <tr data-location="<?= $relativePath ?>" data-item="<?= $item ?>" class="selectable dbclick-navigate">
-                                <td class="item-name" title="<?= $item ?>">
-                                    <a href="?path=<?= $relativePath.DIRECTORY_SEPARATOR.$item ?>">
-                                        <svg><use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/folder.svg#folder"></use></svg>
-                                        <?=$item?>
-                                    </a>
-                                </td>
-                                <td class="item-actions">
-                                    <svg style="width: 16px; height: 35px;"><use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/sprite_icons.svg#more"></use></svg>
-                                </td>
-                            </tr>
-                            <?php
-                        }
-                    }
-                    ?>
-                </table>
+                </script>
+            </td>
+            <td>
+                <button class="button button-primary">Save</button>
             </td>
         </tr>
     </table>
