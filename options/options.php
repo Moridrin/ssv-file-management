@@ -4,6 +4,7 @@ use mp_ssv_general\SSV_General;
 if (!defined('ABSPATH')) {
     exit;
 }
+
 function ssv_add_ssv_file_manager_options()
 {
     add_submenu_page('ssv_settings', 'File Manager Options', 'File Manager', 'manage_options', 'ssv-file-manager-settings', 'ssv_file_manager_options_page_content');

@@ -10,6 +10,7 @@ function mp_ssv_ajax_file_manager()
         'showFiles'         => true,
         'selectableFiles'   => true,
         'selectableFolders' => true,
+        'allowCreateFolder' => true,
     ];
     foreach ($options as &$option) {
         $option = filter_var($option, FILTER_VALIDATE_BOOLEAN);
@@ -24,7 +25,9 @@ function mp_ssv_ajax_file_manager()
     } else {
         ?>
         <h1 id="currentFolderTitle" style="display: inline-block"><?= end($pathArray) ?></h1>
-        <button id="addFolder" class="button button-primary" style="float: right" data-path="<?= $path ?>">Add Folder</button>
+        <?php if ($options['allowCreateFolder']): ?>
+            <button id="addFolder" class="button button-primary" style="float: right" data-path="<?= $path ?>">Add Folder</button>
+        <?php endif; ?>
         <br/>
         <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" data-path="<?= $path ?>" style="width: 100%;">
             <colgroup>

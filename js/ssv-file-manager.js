@@ -1,5 +1,6 @@
 let $fileManager;
 let $options;
+let $updateCallback;
 function updateFileManager(path) {
     jQuery(function ($) {
         $.ajax({
@@ -13,12 +14,14 @@ function updateFileManager(path) {
             success: function (data) {
                 $fileManager.html(data);
                 fileManagerLoaded($fileManager);
+                $updateCallback(path);
             }
         });
     });
 }
 
-function fileManagerInit(fileManagerId, path, options) {
+function fileManagerInit(fileManagerId, path, options, updateCallback) {
+    $updateCallback = updateCallback;
     $options = options;
     if ($options === undefined) {
         $options = {};
@@ -83,7 +86,7 @@ function fileManagerLoaded() {
                         type: "POST",
                         url: urls.admin,
                         data: {
-                            'action': 'mp_ssv_delete_item',
+                            'action': 'mp_ssv_file_manager_delete_item',
                             'path': path,
                             'item': item,
                         },
@@ -107,7 +110,7 @@ function fileManagerLoaded() {
                         '<td class="item-name">' +
                         '<svg id="rename-item-icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
                         '<form id="renameForm">' +
-                        '<input type="hidden" name="action" value="mp_ssv_rename_item">' +
+                        '<input type="hidden" name="action" value="mp_ssv_file_manager_rename_item">' +
                         '<input type="hidden" name="path" value="' + data.$trigger.data('location') + '">' +
                         '<input type="hidden" name="oldItemName" value="' + oldName + '">' +
                         '<input type="text" name="newItemName" style="height: 35px; width: calc(100% - 90px); float: left; margin: 4px 0;">' +
@@ -141,7 +144,7 @@ function fileManagerLoaded() {
         };
         $('ul.context-menu-root').remove();
         $itemList.contextMenu({
-            selector: 'tr.selectable',
+            selector: 'tr',
             callback: contextMenu.callback,
             items: contextMenu.items,
         });
@@ -178,19 +181,7 @@ function fileManagerLoaded() {
             if (item) {
                 path += '/' + $(this).data('item')
             }
-            $.ajax({
-                method: 'POST',
-                url: urls.admin,
-                data: {
-                    action: 'mp_ssv_ajax_file_manager',
-                    path: path,
-                    options: $options
-                },
-                success: function (data) {
-                    $fileManager.html(data);
-                    fileManagerLoaded($fileManager);
-                }
-            });
+            updateFileManager(path);
         });
         $('.dbclick-download').dblclick(function () {
             let path = $(this).data('location');
@@ -210,19 +201,7 @@ function fileManagerLoaded() {
                 if (item) {
                     path += '/' + $(this).data('item')
                 }
-                $.ajax({
-                    method: 'POST',
-                    url: urls.admin,
-                    data: {
-                        action: 'mp_ssv_ajax_file_manager',
-                        path: path,
-                        options: $options
-                    },
-                    success: function (data) {
-                        $fileManager.html(data);
-                        fileManagerLoaded($fileManager);
-                    }
-                });
+                updateFileManager(path);
             }
         });
         $('#addFolder').click(function () {
@@ -231,9 +210,9 @@ function fileManagerLoaded() {
                 '<td class="item-name">' +
                 '<svg><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
                 '<form id="newFolderForm">' +
-                '<input type="hidden" name="action" value="mp_ssv_create_folder">' +
+                '<input type="hidden" name="action" value="mp_ssv_file_manager_create_folder">' +
                 '<input type="hidden" name="path" value="' + path + '">' +
-                '<input type="text" name="newFolderName" style="height: 35px; width: calc(100% - 90px); float: left;">' +
+                '<input type="text" name="newFolderName" style="height: 35px; width: calc(100% - 90px); float: left; margin: 0;">' +
                 '<button type="submit" class="inline"><svg style="margin: 0; height: 15px; width: 15px;"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-manager/images/sprite_icons.svg#apply"></use></svg></button>' +
                 '</form>' +
                 '</td>' +
