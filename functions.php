@@ -92,7 +92,7 @@ function mp_ssv_frontend_file_manager_filter($content)
         ?>
         <div id="fileManager"></div>
         <script>
-            fileManagerInit('fileManager', '<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>');
+            fileManagerInit('fileManager', null);
         </script>
         <?php
         $content = str_replace('[ssv_file_manager]', ob_get_clean(), $content);
@@ -124,7 +124,7 @@ function mp_ssv_ajax_file_manager_file_upload()
         throw new HttpInvalidParamException('The "path" parameter isn\'t provided.');
     }
     $uploadDir = realpath($_POST['path']);
-    if (mp_ssv_starts_with($uploadDir, SSV_FILE_MANAGER_ROOT_FOLDER)/* || current_user_can('administrator')*/) {
+    if (mp_ssv_starts_with($uploadDir, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
         if (!is_dir($uploadDir)) {
             echo json_encode(['success' => false, 'message' => $uploadDir . ' is not a directory.']);
         } elseif (!is_writable($uploadDir)) {
@@ -152,7 +152,7 @@ function mp_ssv_ajax_file_manager_create_folder()
         throw new HttpInvalidParamException('The "path" or "newFolderName" parameter isn\'t provided.');
     }
     $createPath = realpath($_POST['path']);
-    if (mp_ssv_starts_with($createPath, SSV_FILE_MANAGER_ROOT_FOLDER)/* || current_user_can('administrator')*/) {
+    if (mp_ssv_starts_with($createPath, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
         mkdir($createPath . DIRECTORY_SEPARATOR . $_POST['newFolderName']);
         echo json_encode(['success' => true, 'message' => 'Created new directory ' . $createPath]);
     } else {
@@ -192,7 +192,7 @@ function mp_ssv_ajax_file_manager_delete_item()
     }
     $base       = realpath($_POST['path']);
     $deleteItem = $base . DIRECTORY_SEPARATOR . $_POST['item'];
-    if (mp_ssv_starts_with($deleteItem, SSV_FILE_MANAGER_ROOT_FOLDER)/* || current_user_can('administrator')*/) {
+    if (mp_ssv_starts_with($deleteItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
         mp_ssv_file_manager_delete_item($deleteItem);
         echo json_encode(['success' => true, 'message' => 'Deleted ' . $deleteItem]);
     } else {
@@ -213,7 +213,7 @@ function mp_ssv_ajax_file_manager_rename_item()
     $base        = realpath($_POST['path']);
     $currentItem = $base . DIRECTORY_SEPARATOR . $_POST['oldItemName'];
     $newItem     = $base . DIRECTORY_SEPARATOR . $_POST['newItemName'];
-    if (mp_ssv_starts_with($currentItem, SSV_FILE_MANAGER_ROOT_FOLDER)/* || current_user_can('administrator')*/) {
+    if (mp_ssv_starts_with($currentItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
         if (rename($currentItem, $newItem)) {
             echo json_encode(['success' => true, 'message' => 'Renamed ' . $currentItem . ' to ' . $newItem]);
         }
@@ -233,10 +233,13 @@ function mp_ssv_ajax_file_manager_get_shared_with()
         throw new HttpInvalidParamException('The "path" parameter isn\'t provided.');
     }
     $path = realpath($_POST['path']);
-    if (mp_ssv_starts_with($path, SSV_FILE_MANAGER_ROOT_FOLDER)/* || current_user_can('administrator')*/) {
+    if (mp_ssv_starts_with($path, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
         $roles = array_keys(get_editable_roles());
         $folderAccess = SSV_FileManager::getFolderAccess($path);
         foreach ($roles as $role) {
+            if ($role === 'administrator') {
+                continue; // Administrator has always access.
+            }
             ?>
             <option value="<?= $role ?>" <?= in_array($role, $folderAccess) ? 'selected' : '' ?>>
                 <?= $role ?>

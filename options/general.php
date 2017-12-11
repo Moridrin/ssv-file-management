@@ -71,17 +71,7 @@ $roles = array_keys(get_editable_roles());
         </td>
         <td>
             <h1><label for="roles">Shared With</label></h1>
-            <select id="roles" size="<?= count($roles) ?>" name="roles[]" multiple style="width: 100%;">
-                <?php
-                foreach ($roles as $role) {
-                    ?>
-                    <option value="<?= $role ?>">
-                        <?= $role ?>
-                    </option>
-                    <?php
-                }
-                ?>
-            </select>
+            <select id="roles" size="<?= count($roles) - 1 ?>" name="roles[]" multiple style="width: 100%;"></select>
         </td>
     </tr>
 </table>

@@ -13,6 +13,7 @@
 namespace mp_ssv_file_manager;
 
 use mp_ssv_general\SSV_General;
+use mp_ssv_general\User;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -80,7 +81,7 @@ class SSV_FileManager
     #endregion
 
     #region
-    public static function getFolderAccess(string $path): array
+    public static function getFolderAccess(string $path = SSV_FILE_MANAGER_ROOT_FOLDER): array
     {
         $path = realpath($path);
         global $wpdb;
@@ -92,6 +93,72 @@ class SSV_FileManager
         } else {
             return json_decode($roles);
         }
+    }
+
+    public static function hasFolderAccess(string $path, User $user = null)
+    {
+        if (!is_dir($path)) {
+            return false;
+        }
+        if (current_user_can('administrator')) {
+            return true;
+        }
+        if ($user === null) {
+            $user = User::getCurrent();
+        }
+
+        return count(array_intersect($user->roles, self::getFolderAccess($path))) > 0;
+    }
+
+    public static function getRootFolders(User $user = null): array
+    {
+        if (current_user_can('administrator')) {
+            return [SSV_FileManager::ROOT_FOLDER];
+        }
+        if ($user === null) {
+            $user = User::getCurrent();
+        }
+        global $wpdb;
+        $table_name = SSV_FileManager::TABLE_FOLDER_RIGHTS;
+        $sqlWithAccess = "SELECT path FROM $table_name";
+        $sqlWithoutAccess = "SELECT path FROM $table_name";
+        $roles = $user->roles;
+        if (count($roles)) {
+            $role = array_pop($roles);
+            $sqlWithAccess .= " WHERE JSON_CONTAINS(roles, '\"$role\"')";
+            $sqlWithoutAccess .= " WHERE !JSON_CONTAINS(roles, '\"$role\"')";
+        }
+        foreach ($roles as $role) {
+            $sqlWithAccess .= " OR JSON_CONTAINS(roles, '\"$role\"')";
+            $sqlWithoutAccess .= " AND !JSON_CONTAINS(roles, '\"$role\"')";
+        }
+        $pathsWithAccess = $wpdb->get_results($sqlWithAccess);
+        $pathsWithoutAccess = $wpdb->get_results($sqlWithoutAccess);
+
+        if ($pathsWithAccess === null) {
+            $pathsWithAccess = [];
+        } else {
+            $pathsWithAccess = array_column($pathsWithAccess, 'path');
+        }
+        if ($pathsWithoutAccess === null) {
+            $pathsWithoutAccess = [];
+        } else {
+            $pathsWithoutAccess = array_column($pathsWithoutAccess, 'path');
+        }
+        $rootPaths = array_filter($pathsWithAccess, function($path) use ($pathsWithAccess, $pathsWithoutAccess) {
+            foreach ($pathsWithAccess as $otherPath) {
+                if ($path !== $otherPath && mp_ssv_starts_with($path, $otherPath)) {
+                    foreach ($pathsWithoutAccess as $pathWithoutAccess) {
+                        if (mp_ssv_starts_with($path, $pathWithoutAccess) && mp_ssv_starts_with($pathWithoutAccess, $otherPath)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+            return true;
+        });
+        return $rootPaths;
     }
     #endregion
 }
