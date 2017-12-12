@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
 global $wpdb;
 if (SSV_General::isValidPOST(SSV_General::OPTIONS_ADMIN_REFERER)) {
     if (isset($_POST['reset'])) {
-        SSV_General::var_export('Not implemented yet.', 1);
+        SSV_FileManager::resetOptions();
     } else {
         $roles = isset($_POST['roles']) ? $_POST['roles'] : [];
         $wpdb->delete(SSV_FileManager::TABLE_FOLDER_RIGHTS, ['path' => $_POST['path']]);

@@ -65,12 +65,8 @@ class SSV_FileManager
     public static function resetGeneralOptions()
     {
         global $wpdb;
-        $wpdb->delete(
-            self::TABLE_FOLDER_RIGHTS,
-            array(
-                '1' => 1,
-            )
-        );
+        $table = self::TABLE_FOLDER_RIGHTS;
+        $wpdb->query("TRUNCATE TABLE $table");
     }
 
     public static function CLEAN_INSTALL()
