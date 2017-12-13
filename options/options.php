@@ -22,7 +22,7 @@ function ssv_file_manager_options_page_content()
         <h1>File Manager Options</h1>
         <h2 class="nav-tab-wrapper">
             <a href="?page=<?= esc_html($_GET['page']) ?>&tab=general" class="nav-tab <?= SSV_General::currentNavTab($active_tab, 'general') ?>">General</a>
-            <a href="http://bosso.nl/plugins/ssv-file-management/" target="_blank" class="nav-tab">
+            <a href="http://bosso.nl/plugins/ssv-file-manager/" target="_blank" class="nav-tab">
                 Help <!--suppress HtmlUnknownTarget -->
                 <img src="<?= esc_url(SSV_General::URL) ?>/images/link-new-tab-small.png" width="14" style="vertical-align:middle">
             </a>
