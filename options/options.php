@@ -36,6 +36,7 @@ function ssv_file_manager_options_page_content()
 }
 
 add_action('admin_menu', 'ssv_add_ssv_file_manager_options');
+add_action('network_admin_menu', 'ssv_add_ssv_file_manager_options', 9);
 
 function ssv_file_manager_general_options_page_content()
 {

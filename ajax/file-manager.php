@@ -21,6 +21,10 @@ function mp_ssv_ajax_file_manager()
         ?>
         <h1 id="currentFolderTitle" style="display: inline-block">SSV Folder Manager</h1>
         <br/>
+        <?php if (count($folders) === 0) {
+            ?><div class="notification">There are no folders you have access to.</div><?php
+        }
+        ?>
         <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" data-path="null" style="width: 100%;">
             <colgroup>
                 <col width="auto"/>
