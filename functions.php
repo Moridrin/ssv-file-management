@@ -222,6 +222,13 @@ function mp_ssv_ajax_file_manager_delete_item()
     $deleteItem = $base . DIRECTORY_SEPARATOR . $_POST['item'];
     if (mp_ssv_starts_with($deleteItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('manage_sites')) {
         mp_ssv_file_manager_delete_item($deleteItem);
+        global $wpdb;
+        $table = SSV_FileManager::TABLE_FOLDER_RIGHTS;
+        $wpdb->query("DELETE FROM $table WHERE path LIKE \"$deleteItem%\"");
+        echo $wpdb->last_query."\n";
+        $table = SSV_FileManager::TABLE_FOLDER_SITE_RIGHTS;
+        $wpdb->query("DELETE FROM $table WHERE path LIKE \"$deleteItem%\"");
+        echo $wpdb->last_query."\n";
         echo json_encode(['success' => true, 'message' => 'Deleted ' . $deleteItem]);
     } else {
         echo json_encode(['success' => false, 'message' => 'You do not have permission to delete ' . $deleteItem]);
@@ -243,6 +250,11 @@ function mp_ssv_ajax_file_manager_rename_item()
     $newItem     = $base . DIRECTORY_SEPARATOR . $_POST['newItemName'];
     if (mp_ssv_starts_with($currentItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('manage_sites')) {
         if (rename($currentItem, $newItem)) {
+            global $wpdb;
+            $table = SSV_FileManager::TABLE_FOLDER_RIGHTS;
+            $wpdb->query("UPDATE $table SET path = REPLACE(path, \"$currentItem\", \"$newItem\")");
+            $table = SSV_FileManager::TABLE_FOLDER_SITE_RIGHTS;
+            $wpdb->query("UPDATE $table SET path = REPLACE(path, \"$currentItem\", \"$newItem\")");
             echo json_encode(['success' => true, 'message' => 'Renamed ' . $currentItem . ' to ' . $newItem]);
         }
     } else {

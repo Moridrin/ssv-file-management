@@ -15,7 +15,7 @@ if (SSV_General::isValidPOST(SSV_General::OPTIONS_ADMIN_REFERER)) {
     } else {
         $domains = isset($_POST['domains']) ? $_POST['domains'] : [];
         $wpdb->replace(
-            SSV_FileManager::TABLE_FOLDER_RIGHTS,
+            SSV_FileManager::TABLE_FOLDER_SITE_RIGHTS,
             [
                 'path' => realpath($_POST['path']),
                 'domains' => json_encode($domains),
@@ -69,7 +69,7 @@ $domains = array_column(get_sites(), 'domain');
         </td>
         <td>
             <h1><label for="domains">Shared With</label></h1>
-            <select id="domains" size="<?= count($domains) - 1 ?>" name="domains[]" multiple style="width: 100%;"></select>
+            <select id="domains" size="<?= count($domains) ?>" name="domains[]" multiple style="width: 100%;"></select>
         </td>
     </tr>
 </table>
