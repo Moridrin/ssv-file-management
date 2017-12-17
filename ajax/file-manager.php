@@ -16,8 +16,8 @@ function mp_ssv_ajax_file_manager()
     foreach ($options as &$option) {
         $option = filter_var($option, FILTER_VALIDATE_BOOLEAN);
     }
-    if (empty($_POST['path']) && !current_user_can('administrator')) {
-        $folders = SSV_FileManager::getRootFolders();
+    if (empty($_POST['path']) && !current_user_can('manage_sites')) {
+        $folders = SSV_FileManager::getRootFoldersForSite();
         ?>
         <h1 id="currentFolderTitle" style="display: inline-block">SSV Folder Manager</h1>
         <br/>
@@ -36,7 +36,7 @@ function mp_ssv_ajax_file_manager()
                 $item = array_pop($pathArray);
                 $path = implode(DIRECTORY_SEPARATOR, $pathArray);
                 ?>
-                <tr class="<?= $options['selectableFolders'] ? 'selectable ' : '' ?>dbclick-navigate folder" data-location="<?= $path ?>" data-item="<?= $item ?>">
+                <tr class="dbclick-navigate folder no-menu" data-location="<?= $path ?>" data-item="<?= $item ?>">
                     <td class="item-name" title="<?= $item ?>">
                         <span data-location="<?= $path ?>" data-item="<?= $item ?>">
                             <svg>
@@ -45,7 +45,7 @@ function mp_ssv_ajax_file_manager()
                             <span class="title"><?= $item ?></span>
                         </span>
                     </td>
-                    <td class="item-actions">
+                    <td class="item-actions-unavailable">
                         <svg>
                             <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
                         </svg>
@@ -77,7 +77,7 @@ function mp_ssv_ajax_file_manager()
                     <col width="36px"/>
                 </colgroup>
                 <?php
-                $items = array_diff(scandir($path), ['.', '..']);
+                $items = array_diff(scandir($path), ['.', '..', 'lost+found']);
                 usort(
                     $items,
                     function ($a, $b) use ($path) {
@@ -102,7 +102,7 @@ function mp_ssv_ajax_file_manager()
                         $folderUp = null;
                     }
                     ?>
-                    <tr data-location="<?= $folderUp ?>" class="dbclick-navigate">
+                    <tr data-location="<?= $folderUp ?>" class="dbclick-navigate no-menu">
                         <td class="item-name" title="Parent Folder">
                             <span data-location="<?= $folderUp ?>">
                                 <svg>

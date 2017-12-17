@@ -15,7 +15,7 @@ function mp_ssv_file_manager_register_plugin()
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     $charset_collate = $wpdb->get_charset_collate();
 
-    #region Permissions Table
+    #region Permissions Tables
     $table_name = SSV_FileManager::TABLE_FOLDER_RIGHTS;
     $sql
                 = "
@@ -25,6 +25,31 @@ function mp_ssv_file_manager_register_plugin()
 			PRIMARY KEY (path)
 		) $charset_collate;";
     $wpdb->query($sql);
+    $table_name = SSV_FileManager::TABLE_FOLDER_SITE_RIGHTS;
+    $sql
+                = "
+		CREATE TABLE IF NOT EXISTS $table_name (
+			path VARCHAR(255) NOT NULL,
+			domains VARCHAR(255) NOT NULL ,
+			PRIMARY KEY (path)
+		) $charset_collate;";
+    $wpdb->query($sql);
+    #endregion
+
+    #region Setup Sites and Access
+    $items = scandir(SSV_FileManager::ROOT_FOLDER);
+    foreach (get_sites() as $site) {
+        if (!in_array($site->domain, $items)) {
+            mkdir(SSV_FileManager::ROOT_FOLDER . DIRECTORY_SEPARATOR . $site->domain);
+        }
+        $wpdb->insert(
+            SSV_FileManager::TABLE_FOLDER_SITE_RIGHTS,
+            [
+                'path'    => realpath(SSV_FileManager::ROOT_FOLDER . DIRECTORY_SEPARATOR . $site->domain),
+                'domains' => json_encode([$site->domain]),
+            ]
+        );
+    }
     #endregion
 }
 
@@ -46,6 +71,9 @@ function mp_ssv_file_manager_uninstall()
     global $wpdb;
     $wpdb->show_errors();
     $table_name = SSV_FileManager::TABLE_FOLDER_RIGHTS;
+    $sql        = "DROP TABLE IF EXISTS $table_name;";
+    $wpdb->query($sql);
+    $table_name = SSV_FileManager::TABLE_FOLDER_SITE_RIGHTS;
     $sql        = "DROP TABLE IF EXISTS $table_name;";
     $wpdb->query($sql);
 }
@@ -124,7 +152,7 @@ function mp_ssv_ajax_file_manager_file_upload()
         throw new HttpInvalidParamException('The "path" parameter isn\'t provided.');
     }
     $uploadDir = realpath($_POST['path']);
-    if (mp_ssv_starts_with($uploadDir, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
+    if (mp_ssv_starts_with($uploadDir, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('manage_sites')) {
         if (!is_dir($uploadDir)) {
             echo json_encode(['success' => false, 'message' => $uploadDir . ' is not a directory.']);
         } elseif (!is_writable($uploadDir)) {
@@ -152,7 +180,7 @@ function mp_ssv_ajax_file_manager_create_folder()
         throw new HttpInvalidParamException('The "path" or "newFolderName" parameter isn\'t provided.');
     }
     $createPath = realpath($_POST['path']);
-    if (mp_ssv_starts_with($createPath, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
+    if (mp_ssv_starts_with($createPath, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('manage_sites')) {
         mkdir($createPath . DIRECTORY_SEPARATOR . $_POST['newFolderName']);
         echo json_encode(['success' => true, 'message' => 'Created new directory ' . $createPath]);
     } else {
@@ -192,7 +220,7 @@ function mp_ssv_ajax_file_manager_delete_item()
     }
     $base       = realpath($_POST['path']);
     $deleteItem = $base . DIRECTORY_SEPARATOR . $_POST['item'];
-    if (mp_ssv_starts_with($deleteItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
+    if (mp_ssv_starts_with($deleteItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('manage_sites')) {
         mp_ssv_file_manager_delete_item($deleteItem);
         echo json_encode(['success' => true, 'message' => 'Deleted ' . $deleteItem]);
     } else {
@@ -213,7 +241,7 @@ function mp_ssv_ajax_file_manager_rename_item()
     $base        = realpath($_POST['path']);
     $currentItem = $base . DIRECTORY_SEPARATOR . $_POST['oldItemName'];
     $newItem     = $base . DIRECTORY_SEPARATOR . $_POST['newItemName'];
-    if (mp_ssv_starts_with($currentItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
+    if (mp_ssv_starts_with($currentItem, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('manage_sites')) {
         if (rename($currentItem, $newItem)) {
             echo json_encode(['success' => true, 'message' => 'Renamed ' . $currentItem . ' to ' . $newItem]);
         }
@@ -226,15 +254,15 @@ function mp_ssv_ajax_file_manager_rename_item()
 add_action('wp_ajax_mp_ssv_file_manager_rename_item', 'mp_ssv_ajax_file_manager_rename_item');
 #endregion
 
-#region Rename Item
+#region Get Shared With
 function mp_ssv_ajax_file_manager_get_shared_with()
 {
     if (!isset($_POST['path'])) {
         throw new HttpInvalidParamException('The "path" parameter isn\'t provided.');
     }
     $path = realpath($_POST['path']);
-    if (mp_ssv_starts_with($path, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('administrator')) {
-        $roles = array_keys(get_editable_roles());
+    if (mp_ssv_starts_with($path, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('manage_sites')) {
+        $roles        = array_keys(get_editable_roles());
         $folderAccess = SSV_FileManager::getFolderAccess($path);
         foreach ($roles as $role) {
             if ($role === 'administrator') {
@@ -253,4 +281,52 @@ function mp_ssv_ajax_file_manager_get_shared_with()
 }
 
 add_action('wp_ajax_mp_ssv_file_manager_get_shared_with', 'mp_ssv_ajax_file_manager_get_shared_with');
+#endregion
+
+#region Get Shared With Domain
+function mp_ssv_ajax_file_manager_get_shared_with_domain()
+{
+    if (!isset($_POST['path'])) {
+        throw new HttpInvalidParamException('The "path" parameter isn\'t provided.');
+    }
+    $path = realpath($_POST['path']);
+    if (mp_ssv_starts_with($path, SSV_FILE_MANAGER_ROOT_FOLDER) || current_user_can('manage_sites')) {
+        $domains      = array_column(get_sites(), 'domain');
+        $folderAccess = SSV_FileManager::getFolderSiteAccess($path);
+        foreach ($domains as $domain) {
+            ?>
+            <option value="<?= $domain ?>" <?= in_array($domain, $folderAccess) ? 'selected' : '' ?>>
+                <?= $domain ?>
+            </option>
+            <?php
+        }
+    } else {
+        echo json_encode(false);
+    }
+    wp_die();
+}
+
+add_action('wp_ajax_mp_ssv_file_manager_get_shared_with_domain', 'mp_ssv_ajax_file_manager_get_shared_with_domain');
+#endregion
+
+#region Add New Site
+function mp_ssv_file_manager_new_site_added($blog_id, $user_id, $domain)
+{
+    /** @var wpdb $wpdb */
+    global $wpdb;
+    $items = scandir(SSV_FileManager::ROOT_FOLDER);
+
+    if (!in_array($domain, $items)) {
+        mkdir(SSV_FileManager::ROOT_FOLDER . DIRECTORY_SEPARATOR . $domain);
+    }
+    $wpdb->insert(
+        SSV_FileManager::TABLE_FOLDER_SITE_RIGHTS,
+        [
+            'path'    => realpath(SSV_FileManager::ROOT_FOLDER . DIRECTORY_SEPARATOR . $domain),
+            'domains' => json_encode([$domain]),
+        ]
+    );
+}
+
+add_action('wpmu_new_blog', 'mp_ssv_file_manager_new_site_added', 3);
 #endregion

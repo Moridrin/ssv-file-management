@@ -144,7 +144,7 @@ function fileManagerLoaded() {
         };
         $('ul.context-menu-root').remove();
         $itemList.contextMenu({
-            selector: 'tr',
+            selector: 'tr:not(.no-menu)',
             callback: contextMenu.callback,
             items: contextMenu.items,
         });

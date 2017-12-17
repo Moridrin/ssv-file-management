@@ -13,18 +13,17 @@ if (SSV_General::isValidPOST(SSV_General::OPTIONS_ADMIN_REFERER)) {
     if (isset($_POST['reset'])) {
         SSV_FileManager::resetOptions();
     } else {
-        $roles = isset($_POST['roles']) ? $_POST['roles'] : [];
-        $wpdb->delete(SSV_FileManager::TABLE_FOLDER_RIGHTS, ['path' => $_POST['path']]);
+        $domains = isset($_POST['domains']) ? $_POST['domains'] : [];
         $wpdb->replace(
             SSV_FileManager::TABLE_FOLDER_RIGHTS,
             [
                 'path' => realpath($_POST['path']),
-                'roles' => json_encode($roles),
+                'domains' => json_encode($domains),
             ]
         );
     }
 }
-$roles = array_keys(get_editable_roles());
+$domains = array_column(get_sites(), 'domain');
 ?>
 <table class="form-table">
     <tr>
@@ -33,7 +32,7 @@ $roles = array_keys(get_editable_roles());
             <script>
                 fileManagerInit(
                     'fileManager',
-                    '<?= null ?>',
+                    '<?= SSV_FILE_MANAGER_ROOT_FOLDER ?>',
                     {
                         showFiles: false,
                         showFolders: true,
@@ -49,18 +48,18 @@ $roles = array_keys(get_editable_roles());
                         // alert(path);
                         jQuery(function ($) {
                             $('#path').val(path);
-                            let $roles = $('#roles');
+                            let $domains = $('#domains');
                             $.ajax({
                                 method: 'POST',
                                 url: urls.admin,
                                 data: {
-                                    action: 'mp_ssv_file_manager_get_shared_with',
+                                    action: 'mp_ssv_file_manager_get_shared_with_domain',
                                     path: path,
                                 },
                                 success: function (data) {
                                     // $('#testData').html(data);
-                                    $roles.html(data);
-                                    $roles.removeAttr('disabled');
+                                    $domains.html(data);
+                                    $domains.removeAttr('disabled');
                                 }
                             });
                         });
@@ -69,8 +68,8 @@ $roles = array_keys(get_editable_roles());
             </script>
         </td>
         <td>
-            <h1><label for="roles">Shared With</label></h1>
-            <select id="roles" size="<?= count($roles) - 1 ?>" name="roles[]" multiple style="width: 100%;"></select>
+            <h1><label for="domains">Shared With</label></h1>
+            <select id="domains" size="<?= count($domains) - 1 ?>" name="domains[]" multiple style="width: 100%;"></select>
         </td>
     </tr>
 </table>
@@ -82,7 +81,7 @@ $roles = array_keys(get_editable_roles());
 <script>
     jQuery(function ($) {
         $('#generalOptionsForm').submit(function () {
-            $(this).prepend($('#roles'));
+            $(this).prepend($('#domains'));
         });
     });
 </script>
