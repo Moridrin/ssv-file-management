@@ -61,7 +61,6 @@
      })();
      */
 
-
     if (!$.ui || !$.widget) {
         // duck punch $.cleanData like jQueryUI does to get that remove event
         $.cleanData = (function (orig) {
@@ -176,7 +175,7 @@
                 } else {
                     // x and y are given (by mouse event)
                     var offsetParentOffset = opt.$menu.offsetParent().offset();
-                    offset = {top: y - offsetParentOffset.top, left: x -offsetParentOffset.left};
+                    offset = {top: y - offsetParentOffset.top, left: x - offsetParentOffset.left};
                 }
 
                 // correct offset if viewport demands it
@@ -476,12 +475,12 @@
                         $(target).trigger(e);
                         root.$layer.show();
                     }
-                    
+
                     if (root.hideOnSecondTrigger && triggerAction && root.$menu !== null && typeof root.$menu !== 'undefined') {
-                      root.$menu.trigger('contextmenu:hide');
-                      return;
+                        root.$menu.trigger('contextmenu:hide');
+                        return;
                     }
-                    
+
                     if (root.reposition && triggerAction) {
                         if (document.elementFromPoint) {
                             if (root.$trigger.is(target)) {
@@ -517,7 +516,7 @@
                         });
                     }
 
-                    if (root !== null && typeof root !== 'undefined' && root.$menu !== null  && typeof root.$menu !== 'undefined') {
+                    if (root !== null && typeof root !== 'undefined' && root.$menu !== null && typeof root.$menu !== 'undefined') {
                         root.$menu.trigger('contextmenu:hide');
                     }
                 }, 50);
@@ -559,7 +558,7 @@
                 // If targetZIndex is heigher then opt.zIndex dont progress any futher.
                 // This is used to make sure that if you are using a dialog with a input / textarea / contenteditable div
                 // and its above the contextmenu it wont steal keys events
-                if (opt.$menu && parseInt(targetZIndex,10) > parseInt(opt.$menu.css("zIndex"),10)) {
+                if (opt.$menu && parseInt(targetZIndex, 10) > parseInt(opt.$menu.css("zIndex"), 10)) {
                     return;
                 }
                 switch (e.keyCode) {
@@ -846,7 +845,6 @@
                     return;
                 }
 
-
                 $this.trigger('contextmenu:focus');
             },
             // :hover done manually so key handling is possible
@@ -866,7 +864,7 @@
                     return;
                 }
 
-                if(opt && opt.$menu && opt.$menu.hasClass('context-menu-visible')){
+                if (opt && opt.$menu && opt.$menu.hasClass('context-menu-visible')) {
                     return;
                 }
 
@@ -882,7 +880,7 @@
                     callback;
 
                 // abort if the key is unknown or disabled or is a menu
-                if (!opt.items[key] || $this.is('.' + root.classNames.disabled + ', .context-menu-separator, .' + root.classNames.notSelectable) || ($this.is('.context-menu-submenu') && root.selectableSubMenu === false )) {
+                if (!opt.items[key] || $this.is('.' + root.classNames.disabled + ', .context-menu-separator, .' + root.classNames.notSelectable) || ($this.is('.context-menu-submenu') && root.selectableSubMenu === false)) {
                     return;
                 }
 
@@ -939,8 +937,7 @@
                 // remember selected
                 opt.$selected = root.$selected = $this;
 
-
-                if(opt && opt.$node && opt.$node.hasClass('context-menu-submenu')){
+                if (opt && opt.$node && opt.$node.hasClass('context-menu-submenu')) {
                     opt.$node.addClass(root.classNames.hover);
                 }
 
@@ -1007,7 +1004,7 @@
                 // position and show context menu
                 opt.$menu.css(css)[opt.animation.show](opt.animation.duration, function () {
                     $trigger.trigger('contextmenu:visible');
-                    
+
                     op.activated(opt);
                     opt.events.activated();
                 });
@@ -1542,24 +1539,24 @@
                 promise.then(completedPromise.bind(this, opt, root), errorPromise.bind(this, opt, root));
             },
             // operation that will run after contextMenu showed on screen
-            activated: function(opt){
+            activated: function (opt) {
                 var $menu = opt.$menu;
                 var $menuOffset = $menu.offset();
                 var winHeight = $(window).height();
                 var winScrollTop = $(window).scrollTop();
                 var menuHeight = $menu.height();
-                if(menuHeight > winHeight){
+                if (menuHeight > winHeight) {
                     $menu.css({
-                        'height' : winHeight + 'px',
+                        'height': winHeight + 'px',
                         'overflow-x': 'hidden',
                         'overflow-y': 'auto',
                         'top': winScrollTop + 'px'
                     });
-                } else if(($menuOffset.top < winScrollTop) || ($menuOffset.top + menuHeight > winScrollTop + winHeight)){
+                } else if (($menuOffset.top < winScrollTop) || ($menuOffset.top + menuHeight > winScrollTop + winHeight)) {
                     $menu.css({
                         'top': '0px'
                     });
-                } 
+                }
             }
         };
 
@@ -1652,11 +1649,11 @@
 
             case 'update':
                 // Updates visibility and such
-                if(_hasContext){
+                if (_hasContext) {
                     op.update($context);
                 } else {
-                    for(var menu in menus){
-                        if(menus.hasOwnProperty(menu)){
+                    for (var menu in menus) {
+                        if (menus.hasOwnProperty(menu)) {
                             op.update(menus[menu]);
                         }
                     }
@@ -1736,7 +1733,7 @@
                     case 'left':
                         $context.on('click' + o.ns, o.selector, o, handle.click);
                         break;
-				    case 'touchstart':
+                    case 'touchstart':
                         $context.on('touchstart' + o.ns, o.selector, o, handle.click);
                         break;
                     /*

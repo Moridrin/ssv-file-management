@@ -18,7 +18,7 @@ if (SSV_General::isValidPOST(SSV_General::OPTIONS_ADMIN_REFERER)) {
         $wpdb->replace(
             SSV_FileManager::TABLE_FOLDER_RIGHTS,
             [
-                'path' => realpath($_POST['path']),
+                'path'  => realpath($_POST['path']),
                 'roles' => json_encode($roles),
             ]
         );

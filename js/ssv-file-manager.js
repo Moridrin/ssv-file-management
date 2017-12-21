@@ -1,6 +1,7 @@
 let $fileManager;
 let $options;
 let $updateCallback;
+
 function updateFileManager(path) {
     jQuery(function ($) {
         $.ajax({
@@ -234,9 +235,10 @@ function fileManagerLoaded() {
         $('#uploadPath').val($fileManager.children('.item-list').data('path'));
     });
 }
+
 Dropzone.options.uploadFile = {
-    init: function() {
-        this.on("success", function(file) {
+    init: function () {
+        this.on("success", function (file) {
             let path = $fileManager.children('.item-list').data('path');
             updateFileManager(path);
             this.removeAllFiles();

@@ -1,18 +1,17 @@
 <?php
 
 use mp_ssv_file_manager\SSV_FileManager;
-use mp_ssv_general\SSV_General;
 
 function mp_ssv_ajax_file_manager()
 {
-    $options  = $_POST['options'] + [
-        'showFolderUp'      => true,
-        'showFolders'       => true,
-        'showFiles'         => true,
-        'selectableFiles'   => true,
-        'selectableFolders' => true,
-        'allowCreateFolder' => true,
-    ];
+    $options = $_POST['options'] + [
+            'showFolderUp'      => true,
+            'showFolders'       => true,
+            'showFiles'         => true,
+            'selectableFiles'   => true,
+            'selectableFolders' => true,
+            'allowCreateFolder' => true,
+        ];
     foreach ($options as &$option) {
         $option = filter_var($option, FILTER_VALIDATE_BOOLEAN);
     }
@@ -22,7 +21,8 @@ function mp_ssv_ajax_file_manager()
         <h1 id="currentFolderTitle" style="display: inline-block">SSV Folder Manager</h1>
         <br/>
         <?php if (count($folders) === 0) {
-            ?><div class="notification">There are no folders you have access to.</div><?php
+            ?>
+            <div class="notification">There are no folders you have access to.</div><?php
         }
         ?>
         <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" data-path="null" style="width: 100%;">
@@ -33,8 +33,8 @@ function mp_ssv_ajax_file_manager()
             <?php
             foreach ($folders as $path) {
                 $pathArray = explode(DIRECTORY_SEPARATOR, $path);
-                $item = array_pop($pathArray);
-                $path = implode(DIRECTORY_SEPARATOR, $pathArray);
+                $item      = array_pop($pathArray);
+                $path      = implode(DIRECTORY_SEPARATOR, $pathArray);
                 ?>
                 <tr class="dbclick-navigate folder no-menu" data-location="<?= $path ?>" data-item="<?= $item ?>">
                     <td class="item-name" title="<?= $item ?>">

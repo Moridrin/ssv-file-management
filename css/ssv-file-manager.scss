@@ -11,11 +11,11 @@
     user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
 
     &.selected {
-      background: rgba(0,0,0,0.2);
+      background: rgba(0, 0, 0, 0.2);
     }
 
     &:hover {
-      background: rgba(0,0,0,0.4);
+      background: rgba(0, 0, 0, 0.4);
     }
 
     td.item-name {
@@ -34,8 +34,8 @@
       }
 
       svg {
-        color: #ffffff;
-        fill: #ffb300;
+        color: #FFFFFF;
+        fill: #FFB300;
         width: 35px;
         height: 35px;
         float: left;
@@ -44,7 +44,7 @@
     }
 
     td.item-actions,
-    td.item-actions-unavailable{
+    td.item-actions-unavailable {
       vertical-align: middle;
       cursor: pointer;
       padding: 4px;

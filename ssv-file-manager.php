@@ -3,7 +3,7 @@
  * Plugin Name: SSV File Management
  * Plugin URI: http://moridrin.com/ssv-file-manager
  * Description: This is a plugin to let the members manage files in the frontend of the Sportal.
- * Version: 1.2.0
+ * Version: 1.1.0
  * Author: Jeroen Berkvens
  * Author URI: http://nl.linkedin.com/in/jberkvens/
  * License: WTFPL
@@ -12,7 +12,6 @@
 
 namespace mp_ssv_file_manager;
 
-use mp_ssv_general\SSV_General;
 use mp_ssv_general\User;
 
 if (!defined('ABSPATH')) {
@@ -26,33 +25,25 @@ error_reporting(E_ALL);
 global $wpdb;
 define('SSV_FILE_MANAGER_PATH', plugin_dir_path(__FILE__));
 define('SSV_FILE_MANAGER_URL', plugins_url() . '/ssv-file-manager/');
-define('SSV_FILE_MANAGER_FOLDER_RIGHTS_TABLE', $wpdb->prefix . 'ssv_file_manager_folder_rights');
-define('SSV_FILE_MANAGER_FOLDER_SITE_RIGHTS_TABLE', $wpdb->get_blog_prefix(get_network()->site_id) . 'ssv_file_manager_folder_site_rights');
+define('SSV_FILE_MANAGER_FOLDER_RIGHTS_TABLE', $wpdb->prefix . "ssv_file_manager_folder_rights");
 define('SSV_FILE_MANAGER_ROOT_FOLDER', realpath(ABSPATH . 'wp-content' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'SSV File Manager'));
 
-#region Require Once
 require_once 'general/general.php';
 require_once 'functions.php';
 require_once 'options/options.php';
 require_once 'ajax/file-manager.php';
-#endregion
 
-#region SSV_Events class
 class SSV_FileManager
 {
-    #region Constants
     const PATH = SSV_FILE_MANAGER_PATH;
     const URL = SSV_FILE_MANAGER_URL;
 
     const TABLE_FOLDER_RIGHTS = SSV_FILE_MANAGER_FOLDER_RIGHTS_TABLE;
-    const TABLE_FOLDER_SITE_RIGHTS = SSV_FILE_MANAGER_FOLDER_SITE_RIGHTS_TABLE;
 
     const ROOT_FOLDER = SSV_FILE_MANAGER_ROOT_FOLDER;
 
     const ADMIN_REFERER_OPTIONS = 'ssv_file_manager__admin_referer_options';
-    #endregion
 
-    #region resetOptions()
     /**
      * This function sets all the options for this plugin back to their default value
      */
@@ -76,9 +67,7 @@ class SSV_FileManager
         mp_ssv_file_manager_uninstall();
         mp_ssv_file_manager_register_plugin();
     }
-    #endregion
 
-    #region
     public static function getFolderAccess(string $path = SSV_FILE_MANAGER_ROOT_FOLDER): array
     {
         $path = realpath($path);
@@ -93,32 +82,12 @@ class SSV_FileManager
         }
     }
 
-    public static function getFolderSiteAccess(string $path = SSV_FILE_MANAGER_ROOT_FOLDER): array
-    {
-        $path = realpath($path);
-        global $wpdb;
-        $table_name = SSV_FileManager::TABLE_FOLDER_SITE_RIGHTS;
-        $sql        = "SELECT domains FROM $table_name WHERE '$path' LIKE CONCAT(path, '%') ORDER BY CHAR_LENGTH(path) DESC";
-        $roles      = $wpdb->get_var($sql);
-        if ($roles === null) {
-            return [];
-        } else {
-            return json_decode($roles);
-        }
-    }
-
     public static function hasFolderAccess(string $path, User $user = null)
     {
         if (!is_dir($path)) {
             return false;
         }
-        if (current_user_can('manage_sites')) {
-            return true;
-        }
-        if (!in_array(get_blog_details()->domain, self::getFolderSiteAccess($path))) {
-            return false;
-        }
-        if (current_user_can('manage_options')) {
+        if (current_user_can('administrator')) {
             return true;
         }
         if ($user === null) {
@@ -130,7 +99,7 @@ class SSV_FileManager
 
     public static function getRootFolders(User $user = null): array
     {
-        if (current_user_can('manage_sites')) {
+        if (current_user_can('administrator')) {
             return [SSV_FileManager::ROOT_FOLDER];
         }
         if ($user === null) {
@@ -181,48 +150,4 @@ class SSV_FileManager
         );
         return $rootPaths;
     }
-
-    public static function getRootFoldersForSite(): array
-    {
-        if (current_user_can('manage_sites')) {
-            return [SSV_FileManager::ROOT_FOLDER];
-        }
-        global $wpdb;
-        $table_name       = SSV_FileManager::TABLE_FOLDER_SITE_RIGHTS;
-        $domain           = get_blog_details()->domain;
-        $sqlWithAccess    = "SELECT path FROM $table_name WHERE JSON_CONTAINS(domains, '\"$domain\"')";
-        $sqlWithoutAccess = "SELECT path FROM $table_name WHERE JSON_CONTAINS(domains, '\"$domain\"')";
-        $pathsWithAccess  = $wpdb->get_results($sqlWithAccess);
-        $pathsWithoutAccess = $wpdb->get_results($sqlWithoutAccess);
-
-        if ($pathsWithAccess === null) {
-            $pathsWithAccess = [];
-        } else {
-            $pathsWithAccess = array_column($pathsWithAccess, 'path');
-        }
-        if ($pathsWithoutAccess === null) {
-            $pathsWithoutAccess = [];
-        } else {
-            $pathsWithoutAccess = array_column($pathsWithoutAccess, 'path');
-        }
-        $rootPaths = array_filter(
-            $pathsWithAccess,
-            function ($path) use ($pathsWithAccess, $pathsWithoutAccess) {
-                foreach ($pathsWithAccess as $otherPath) {
-                    if ($path !== $otherPath && mp_ssv_starts_with($path, $otherPath)) {
-                        foreach ($pathsWithoutAccess as $pathWithoutAccess) {
-                            if (mp_ssv_starts_with($path, $pathWithoutAccess) && mp_ssv_starts_with($pathWithoutAccess, $otherPath)) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-                }
-                return true;
-            }
-        );
-        return $rootPaths;
-    }
-    #endregion
 }
-#endregion
