@@ -25,7 +25,6 @@ function mp_ssv_file_manager_register_plugin()
 }
 
 register_activation_hook(SSV_FILE_MANAGER_PATH . 'ssv-file-manager.php', 'mp_ssv_file_manager_register_plugin');
-register_activation_hook(SSV_FILE_MANAGER_PATH . 'ssv-file-manager.php', 'mp_ssv_general_register_plugin');
 
 function mp_ssv_file_manager_unregister()
 {
@@ -62,7 +61,7 @@ function mp_ssv_file_manager_scripts($hook)
             'urls',
             [
                 'plugins'  => plugins_url(),
-                'admin'    => admin_url('admin-ajax.php'),
+                'ajax'    => admin_url('admin-ajax.php'),
                 'base'     => get_home_url(),
                 'basePath' => ABSPATH,
             ]

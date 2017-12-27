@@ -1,6 +1,6 @@
 <?php
 
-use mp_ssv_general\SSV_General;
+use mp_ssv_general\BaseFunctions;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -21,10 +21,10 @@ function ssv_file_manager_options_page_content()
     <div class="wrap">
         <h1>File Manager Options</h1>
         <h2 class="nav-tab-wrapper">
-            <a href="?page=<?= esc_html($_GET['page']) ?>&tab=general" class="nav-tab <?= SSV_General::currentNavTab($active_tab, 'general') ?>">General</a>
+            <a href="?page=<?= esc_html($_GET['page']) ?>&tab=general" class="nav-tab <?= BaseFunctions::currentNavTab($active_tab, 'general') ?>">General</a>
             <a href="http://bosso.nl/plugins/ssv-file-manager/" target="_blank" class="nav-tab">
                 Help <!--suppress HtmlUnknownTarget -->
-                <img src="<?= esc_url(SSV_General::URL) ?>/images/link-new-tab-small.png" width="14" style="vertical-align:middle">
+                <img src="<?= esc_url(BaseFunctions::URL) ?>/images/link-new-tab-small.png" width="14" style="vertical-align:middle">
             </a>
         </h2>
         <?php
@@ -52,10 +52,10 @@ function ssv_file_manager_super_admin_options_page_content()
     <div class="wrap">
         <h1>File Manager Options</h1>
         <h2 class="nav-tab-wrapper">
-            <a href="?page=<?= esc_html($_GET['page']) ?>&tab=general" class="nav-tab <?= SSV_General::currentNavTab($active_tab, 'general') ?>">General</a>
+            <a href="?page=<?= esc_html($_GET['page']) ?>&tab=general" class="nav-tab <?= BaseFunctions::currentNavTab($active_tab, 'general') ?>">General</a>
             <a href="http://bosso.nl/plugins/ssv-file-manager/" target="_blank" class="nav-tab">
                 Help <!--suppress HtmlUnknownTarget -->
-                <img src="<?= esc_url(SSV_General::URL) ?>/images/link-new-tab-small.png" width="14" style="vertical-align:middle">
+                <img src="<?= esc_url(BaseFunctions::URL) ?>/images/link-new-tab-small.png" width="14" style="vertical-align:middle">
             </a>
         </h2>
         <?php
@@ -73,4 +73,4 @@ function ssv_file_manager_general_options_page_content()
     ?><h2><a href="?page=<?= __FILE__ ?>">File Manager Options</a></h2><?php
 }
 
-add_action(SSV_General::HOOK_GENERAL_OPTIONS_PAGE_CONTENT, 'ssv_file_manager_general_options_page_content');
+add_action(BaseFunctions::HOOK_GENERAL_OPTIONS_PAGE_CONTENT, 'ssv_file_manager_general_options_page_content');

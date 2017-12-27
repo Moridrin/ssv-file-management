@@ -6,7 +6,7 @@ function updateFileManager(path) {
     jQuery(function ($) {
         $.ajax({
             method: 'POST',
-            url: urls.admin,
+            url: urls.ajax,
             data: {
                 action: 'mp_ssv_ajax_file_manager',
                 path: path,
@@ -85,7 +85,7 @@ function fileManagerLoaded() {
                     let item = data.$trigger.data('item');
                     $.ajax({
                         type: "POST",
-                        url: urls.admin,
+                        url: urls.ajax,
                         data: {
                             'action': 'mp_ssv_file_manager_delete_item',
                             'path': path,
@@ -129,7 +129,7 @@ function fileManagerLoaded() {
                         event.preventDefault();
                         $.ajax({
                             type: "POST",
-                            url: urls.admin,
+                            url: urls.ajax,
                             data: $("#renameForm").serialize(),
                             success: function (data) {
                                 updateFileManager($itemList.data('path'));
@@ -224,7 +224,7 @@ function fileManagerLoaded() {
                 event.preventDefault();
                 $.ajax({
                     type: "POST",
-                    url: urls.admin,
+                    url: urls.ajax,
                     data: $("#newFolderForm").serialize(),
                     success: function (data) {
                         updateFileManager(path);

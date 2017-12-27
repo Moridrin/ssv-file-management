@@ -2,14 +2,14 @@
 namespace mp_ssv_file_manager\options;
 
 use mp_ssv_file_manager\SSV_FileManager;
-use mp_ssv_general\SSV_General;
+use mp_ssv_general\BaseFunctions;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
 global $wpdb;
-if (SSV_General::isValidPOST(SSV_General::OPTIONS_ADMIN_REFERER)) {
+if (BaseFunctions::isValidPOST(BaseFunctions::OPTIONS_ADMIN_REFERER)) {
     if (isset($_POST['reset'])) {
         SSV_FileManager::resetOptions();
     } else {
@@ -76,7 +76,7 @@ $domains = array_column(get_sites(), 'domain');
 <div id="testData"></div>
 <form id="generalOptionsForm" method="post" action="#">
     <input type="hidden" id="path" name="path">
-    <?= SSV_General::getFormSecurityFields(SSV_General::OPTIONS_ADMIN_REFERER, true, 'Reset All'); ?>
+    <?= BaseFunctions::getFormSecurityFields(BaseFunctions::OPTIONS_ADMIN_REFERER, true, 'Reset All'); ?>
 </form>
 <script>
     jQuery(function ($) {
