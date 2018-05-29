@@ -16,7 +16,7 @@ function mp_ssv_ajax_file_manager()
         $option = filter_var($option, FILTER_VALIDATE_BOOLEAN);
     }
     if (empty($_POST['path']) && !current_user_can('manage_sites')) {
-        $folders = SSV_FileManager::getRootFoldersForSite();
+        $folders = SSV_FileManager::getRootFolders();
         ?>
         <h1 id="currentFolderTitle" style="display: inline-block">SSV Folder Manager</h1>
         <br/>

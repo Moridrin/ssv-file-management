@@ -1,15 +1,16 @@
 <?php
 namespace mp_ssv_file_manager\options;
 
+use mp_general\base\BaseFunctions;
+use mp_general\base\SSV_Global;
 use mp_ssv_file_manager\SSV_FileManager;
-use mp_ssv_general\BaseFunctions;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
 global $wpdb;
-if (BaseFunctions::isValidPOST(BaseFunctions::OPTIONS_ADMIN_REFERER)) {
+if (BaseFunctions::isValidPOST(SSV_Global::ADMIN_REFERER)) {
     if (isset($_POST['reset'])) {
         SSV_FileManager::resetOptions();
     } else {
@@ -77,7 +78,7 @@ $roles = array_keys(get_editable_roles());
 <div id="testData"></div>
 <form id="generalOptionsForm" method="post" action="#">
     <input type="hidden" id="path" name="path">
-    <?= BaseFunctions::getFormSecurityFields(BaseFunctions::OPTIONS_ADMIN_REFERER, true, 'Reset All'); ?>
+    <?=BaseFunctions::getAdminFormSecurityFields(SSV_Global::ADMIN_REFERER, true, 'Reset All');?>
 </form>
 <script>
     jQuery(function ($) {
