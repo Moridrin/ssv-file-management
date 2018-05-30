@@ -13,10 +13,11 @@ function ssv_add_ssv_file_manager_options()
 
 function wpse_141088_upload_dir($dir)
 {
+    $currentFolder = '/mycustomdir';
     return [
-               'path'   => $dir['basedir'] . '/mycustomdir',
-               'url'    => $dir['baseurl'] . '/mycustomdir',
-               'subdir' => '/mycustomdir',
+               'path'   => $dir['basedir'] . $currentFolder,
+               'url'    => $dir['baseurl'] . $currentFolder,
+               'subdir' => $currentFolder,
            ] + $dir;
 }
 
@@ -28,16 +29,10 @@ function ssv_file_manager_options_page_content()
         // Register our path override.
         add_filter('upload_dir', 'wpse_141088_upload_dir');
         $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
-        $wp_upload_dir = wp_upload_dir();
-        $attachment = [
-            'guid'           => $wp_upload_dir['url'] . '/' . basename($movefile['file']),
-            'post_mime_type' => $movefile['type'],
-            'post_title'     => preg_replace('/\.[^.]+$/', '', basename($movefile['file'])),
-            'post_content'   => '',
-            'post_status'    => 'inherit',
-        ];
-        $attach_id = wp_insert_attachment( $attachment, $movefile['file']);
-        wp_generate_attachment_metadata($attach_id, $movefile['file']);
+        if (function_exists('dos_file_upload')) {
+            call_user_func('dos_file_upload', $movefile['file']);
+            wp_delete_file($movefile['file']);
+        }
         remove_filter('upload_dir', 'wpse_141088_upload_dir');
         if ( $movefile && ! isset( $movefile['error'] ) ) {
             echo "File is valid, and was successfully uploaded.\n";
