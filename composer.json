@@ -1,0 +1,26 @@
+{
+  "name": "moridrin/ssv-file-manager",
+  "type": "plugin",
+  "description": "This WordPress plugin adds a file manager connected with DigitalOcean Spaces Container.",
+  "keywords": [
+    "aws",
+    "s3",
+    "digitalocean",
+    "spaces",
+    "storage",
+    "cloudfiles"
+  ],
+  "homepage": "https://github.com/Moridrin/ssv-file-manager",
+  "license": "WTFYW",
+  "authors": [
+    {
+      "name": "jberkvens",
+      "email": "j.berkvens@moridrin.com",
+      "homepage": "https://github.com/jberkvens"
+    }
+  ],
+  "require": {
+    "php": ">=7.2.5",
+    "league/flysystem-aws-s3-v3": "^1.0"
+  }
+}

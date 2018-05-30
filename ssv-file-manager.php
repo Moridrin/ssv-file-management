@@ -16,6 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 require_once 'general/general.php';
 require_once 'SSV_FileManager.php';
 require_once 'functions.php';

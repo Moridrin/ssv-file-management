@@ -12,11 +12,12 @@ function mp_ssv_ajax_file_manager()
             'selectableFolders' => true,
             'allowCreateFolder' => true,
         ];
+    $filesystem = SSV_FileManager::connect();
     foreach ($options as &$option) {
         $option = filter_var($option, FILTER_VALIDATE_BOOLEAN);
     }
     if (empty($_POST['path']) && !current_user_can('manage_sites')) {
-        $folders = SSV_FileManager::getRootFolders();
+        $folders = $filesystem->listContents('/');
         ?>
         <h1 id="currentFolderTitle" style="display: inline-block">SSV Folder Manager</h1>
         <br/>
@@ -31,9 +32,10 @@ function mp_ssv_ajax_file_manager()
                 <col width="36px"/>
             </colgroup>
             <?php
-            foreach ($folders as $path) {
-                $pathArray = explode(DIRECTORY_SEPARATOR, $path);
-                $item      = array_pop($pathArray);
+            foreach ($folders as $folder) {
+                $pathArray = explode(DIRECTORY_SEPARATOR, $folder['path']);
+                array_pop($pathArray);
+                $item      = $folder['filename'];
                 $path      = implode(DIRECTORY_SEPARATOR, $pathArray);
                 ?>
                 <tr class="dbclick-navigate folder no-menu" data-location="<?= $path ?>" data-item="<?= $item ?>">
@@ -57,61 +59,93 @@ function mp_ssv_ajax_file_manager()
         </table>
         <?php
     } else {
-        $path      = realpath(!empty($_POST['path']) ? $_POST['path'] : SSV_FILE_MANAGER_ROOT_FOLDER);
+        $path      = $_POST['path'] ?? DIRECTORY_SEPARATOR;
         $pathArray = explode(DIRECTORY_SEPARATOR, $path);
-
-        if (!mp_ssv_starts_with($path, SSV_FILE_MANAGER_ROOT_FOLDER) || !SSV_FileManager::hasFolderAccess($path)) {
-            ?>
-            <div class="notification error">You are not allowed to view this folder.</div>
+        ?>
+        <h1 id="currentFolderTitle" style="display: inline-block"><?= end($pathArray) ?></h1>
+        <?php if ($options['allowCreateFolder']): ?>
+            <button id="addFolder" class="button button-primary" style="float: right" data-path="<?= $path ?>">Add Folder</button>
+        <?php endif; ?>
+        <br/>
+        <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" data-path="<?= $path ?>" style="width: 100%;">
+            <colgroup>
+                <col width="auto"/>
+                <col width="36px"/>
+            </colgroup>
             <?php
-        } else {
-            ?>
-            <h1 id="currentFolderTitle" style="display: inline-block"><?= end($pathArray) ?></h1>
-            <?php if ($options['allowCreateFolder']): ?>
-                <button id="addFolder" class="button button-primary" style="float: right" data-path="<?= $path ?>">Add Folder</button>
-            <?php endif; ?>
-            <br/>
-            <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" data-path="<?= $path ?>" style="width: 100%;">
-                <colgroup>
-                    <col width="auto"/>
-                    <col width="36px"/>
-                </colgroup>
+            $items = $filesystem->listContents($path);
+            usort(
+                $items,
+                function ($a, $b) use ($path) {
+                    $aIsDir = $a['type'] === 'dir';
+                    $bIsDir = $b['type'] === 'dir';
+                    if (($aIsDir && $bIsDir) || (!$aIsDir && !$bIsDir)) {
+                        return strcmp($a['filename'], $b['filename']);
+                    } elseif ($aIsDir) {
+                        return -1;
+                    } elseif ($bIsDir) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            );
+            if ($options['showFolderUp'] && $path !== SSV_FILE_MANAGER_ROOT_FOLDER) {
+                $parentPathArray = $pathArray;
+                array_pop($parentPathArray);
+                $folderUp = implode(DIRECTORY_SEPARATOR, $parentPathArray);
+                if (!SSV_FileManager::hasFolderAccess($folderUp)) {
+                    $folderUp = null;
+                }
+                ?>
+                <tr data-location="<?= $folderUp ?>" class="dbclick-navigate no-menu">
+                    <td class="item-name" title="Parent Folder">
+                        <span data-location="<?= $folderUp ?>">
+                            <svg>
+                                <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/folder-up.svg#folder-up"></use>
+                            </svg>
+                            <span>..</span>
+                        </span>
+                    </td>
+                    <td class="item-actions-unavailable">
+                        <svg>
+                            <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
+                        </svg>
+                    </td>
+                </tr>
                 <?php
-                $items = array_diff(scandir($path), ['.', '..', 'lost+found']);
-                usort(
-                    $items,
-                    function ($a, $b) use ($path) {
-                        $aIsDir = is_dir($path . DIRECTORY_SEPARATOR . $a);
-                        $bIsDir = is_dir($path . DIRECTORY_SEPARATOR . $b);
-                        if (($aIsDir && $bIsDir) || (!$aIsDir && !$bIsDir)) {
-                            return strcmp($a, $b);
-                        } elseif ($aIsDir) {
-                            return -1;
-                        } elseif ($bIsDir) {
-                            return 1;
-                        } else {
-                            return 0;
-                        }
-                    }
-                );
-                if ($options['showFolderUp'] && $path !== SSV_FILE_MANAGER_ROOT_FOLDER) {
-                    $parentPathArray = $pathArray;
-                    array_pop($parentPathArray);
-                    $folderUp = implode(DIRECTORY_SEPARATOR, $parentPathArray);
-                    if (!SSV_FileManager::hasFolderAccess($folderUp)) {
-                        $folderUp = null;
-                    }
+            }
+            foreach ($items as $item) {
+                if ($options['showFolders'] && $item['type'] === 'dir') {
                     ?>
-                    <tr data-location="<?= $folderUp ?>" class="dbclick-navigate no-menu">
-                        <td class="item-name" title="Parent Folder">
-                            <span data-location="<?= $folderUp ?>">
+                    <tr class="<?= $options['selectableFolders'] ? 'selectable ' : '' ?>dbclick-navigate folder" data-location="<?= $path ?>" data-item="<?= json_encode($item) ?>">
+                        <td class="item-name" title="<?= \mp_general\base\BaseFunctions::escape($item[''], 'attr') ?>">
+                            <span data-location="<?= $path ?>" data-item="<?= json_encode($item) ?>">
                                 <svg>
-                                    <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/folder-up.svg#folder-up"></use>
+                                    <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/folder.svg#folder"></use>
                                 </svg>
-                                <span>..</span>
+                                <span class="title"><?= \mp_general\base\BaseFunctions::escape($item['filename'], 'html') ?></span>
                             </span>
                         </td>
-                        <td class="item-actions-unavailable">
+                        <td class="item-actions">
+                            <svg>
+                                <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
+                            </svg>
+                        </td>
+                    </tr>
+                    <?php
+                } elseif ($options['showFiles']) {
+                    ?>
+                    <tr class="<?= $options['selectableFiles'] ? 'selectable ' : '' ?>dbclick-download file" data-location="<?= $path ?>" data-item="<?= json_encode($item) ?>">
+                        <td class="item-name" title="<?= json_encode($item) ?>">
+                            <span>
+                                <svg>
+                                    <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/fileapi-upload-button.svg#fileapi-upload-button"></use>
+                                </svg>
+                                <span class="title"><?= \mp_general\base\BaseFunctions::escape($item['filename'], 'html') ?></span>
+                            </span>
+                        </td>
+                        <td class="item-actions">
                             <svg>
                                 <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
                             </svg>
@@ -119,49 +153,10 @@ function mp_ssv_ajax_file_manager()
                     </tr>
                     <?php
                 }
-                foreach ($items as $item) {
-                    if ($options['showFolders'] && SSV_FileManager::hasFolderAccess($path . DIRECTORY_SEPARATOR . $item)) {
-                        ?>
-                        <tr class="<?= $options['selectableFolders'] ? 'selectable ' : '' ?>dbclick-navigate folder" data-location="<?= $path ?>" data-item="<?= $item ?>">
-                            <td class="item-name" title="<?= $item ?>">
-                                <span data-location="<?= $path ?>" data-item="<?= $item ?>">
-                                    <svg>
-                                        <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/folder.svg#folder"></use>
-                                    </svg>
-                                    <span class="title"><?= $item ?></span>
-                                </span>
-                            </td>
-                            <td class="item-actions">
-                                <svg>
-                                    <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
-                                </svg>
-                            </td>
-                        </tr>
-                        <?php
-                    } elseif ($options['showFiles'] && is_file($path . DIRECTORY_SEPARATOR . $item)) {
-                        ?>
-                        <tr class="<?= $options['selectableFiles'] ? 'selectable ' : '' ?>dbclick-download file" data-location="<?= $path ?>" data-item="<?= $item ?>">
-                            <td class="item-name" title="<?= $item ?>">
-                                <span>
-                                    <svg>
-                                        <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/fileapi-upload-button.svg#fileapi-upload-button"></use>
-                                    </svg>
-                                    <span class="title"><?= $item ?></span>
-                                </span>
-                            </td>
-                            <td class="item-actions">
-                                <svg>
-                                    <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
-                                </svg>
-                            </td>
-                        </tr>
-                        <?php
-                    }
-                }
-                ?>
-            </table>
-            <?php
-        }
+            }
+            ?>
+        </table>
+        <?php
     }
     wp_die();
 }

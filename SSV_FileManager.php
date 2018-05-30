@@ -2,6 +2,9 @@
 
 namespace mp_ssv_file_manager;
 
+use Aws\S3\S3Client;
+use League\Flysystem\AwsS3v3\AwsS3Adapter;
+use League\Flysystem\Filesystem;
 use mp_general\base\models\User;
 
 if (!defined('ABSPATH')) {
@@ -76,6 +79,31 @@ class SSV_FileManager
         }
 
         return count(array_intersect($user->roles, self::getFolderAccess($path))) > 0;
+    }
+
+    public static function connect(): Filesystem
+    {
+        $dos_key       = 'YDLOAAYXNUNET3DTV6D2';
+        $dos_secret    = 'a3tpq+qh1n2Noo9tGJ0yXpphrCDAaatkQ/uj71g85m4';
+        $dos_endpoint  = 'https://ams3.digitaloceanspaces.com';
+        $dos_container = 'essf-social';
+
+        $client = S3Client::factory(
+            [
+                'credentials' => [
+                    'key'    => $dos_key,
+                    'secret' => $dos_secret,
+                ],
+                'endpoint'    => $dos_endpoint,
+                'region'      => '',
+                'version'     => 'latest',
+            ]
+        );
+
+        $connection = new AwsS3Adapter($client, $dos_container);
+        $filesystem = new Filesystem($connection);
+
+        return $filesystem;
     }
 
     public static function getRootFolders(User $user = null): array
