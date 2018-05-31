@@ -14,9 +14,6 @@ let ssvFileManager = {
     },
 
     init: function (fileManagerId, path, options) {
-        if (updateCallback instanceof Function) {
-            this.updateCallback = updateCallback;
-        }
         if (options === undefined) {
             options = {};
         }
