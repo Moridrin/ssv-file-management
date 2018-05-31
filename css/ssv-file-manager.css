@@ -34,6 +34,25 @@
       height: 35px;
       float: left;
       margin: 0 10px; }
+
+.item-list tr td.folder-actions,
+.item-list tr td.folder-actions-unavailable {
+    vertical-align: middle;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.item-list tr td.folder-actions svg,
+.item-list tr td.folder-actions-unavailable svg {
+    width: 16px;
+    height: 35px;
+    float: left;
+    margin: 0 8px;
+}
+
+.item-list tr td.folder-actions-unavailable svg {
+    visibility: hidden;
+}
   .item-list tr td.item-actions,
   .item-list tr td.item-actions-unavailable {
     vertical-align: middle;

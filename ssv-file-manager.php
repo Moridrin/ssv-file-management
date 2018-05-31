@@ -16,9 +16,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+require_once 'vendor/autoload.php';
 require_once 'general/general.php';
 require_once 'SSV_FileManager.php';
-require_once 'functions.php';
-require_once 'options/options.php';
-require_once 'ajax/file-manager.php';
+require_once 'shortcodes/file-manager.php';
+// require_once 'options/options.php';
+require_once 'ajax/list-folder.php';
