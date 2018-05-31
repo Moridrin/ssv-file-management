@@ -1,80 +1,58 @@
-let $fileManager;
-let $options;
-let $updateCallback;
+let ssvFileManager = {
+    $fileManager: undefined,
+    options: {
+        'showFolderUp': true,
+        'showFolders': true,
+        'showFiles': true,
+        'allowCreateFolder': true,
+        'allowDownload': true,
+        'allowRename': true,
+        'allowDelete': true,
+        'selectableFolders': true,
+        'selectableFiles': true,
+        'multiSelect': true,
+    },
 
-function updateFileManager(path) {
-    jQuery(function ($) {
-        $.ajax({
+    init: function (fileManagerId, path, options) {
+        if (updateCallback instanceof Function) {
+            this.updateCallback = updateCallback;
+        }
+        if (options === undefined) {
+            options = {};
+        }
+        jQuery.extend(this.options, options);
+        this.$fileManager = jQuery('#' + fileManagerId);
+        ssvFileManager.update(path);
+    },
+
+    update: function (path) {
+        jQuery.ajax({
             method: 'POST',
             url: urls.ajax,
             data: {
                 action: 'mp_ssv_ajax_file_manager',
                 path: path,
-                options: $options,
+                options: ssvFileManager.options,
             },
             success: function (data) {
-                $fileManager.html(data);
-                fileManagerLoaded($fileManager);
-                $updateCallback(path);
+                ssvFileManager.$fileManager.html(data);
+                ssvFileManager.loaded(this.$fileManager);
+                ssvFileManager.updateCallback(path);
             }
         });
-    });
-}
+    },
 
-function fileManagerInit(fileManagerId, path, options, updateCallback) {
-    $updateCallback = updateCallback;
-    $options = options;
-    if ($options === undefined) {
-        $options = {};
-    }
-    if ($options['showFolderUp'] === undefined) {
-        $options['showFolderUp'] = true;
-    }
-    if ($options['showFolders'] === undefined) {
-        $options['showFolders'] = true;
-    }
-    if ($options['showFiles'] === undefined) {
-        $options['showFiles'] = true;
-    }
-    if ($options['allowCreateFolder'] === undefined) {
-        $options['allowCreateFolder'] = true;
-    }
-    if ($options['allowDownload'] === undefined) {
-        $options['allowDownload'] = true;
-    }
-    if ($options['allowRename'] === undefined) {
-        $options['allowRename'] = true;
-    }
-    if ($options['allowDelete'] === undefined) {
-        $options['allowDelete'] = true;
-    }
-    if ($options['selectableFolders'] === undefined) {
-        $options['selectableFolders'] = true;
-    }
-    if ($options['selectableFiles'] === undefined) {
-        $options['selectableFiles'] = true;
-    }
-    if ($options['multiSelect'] === undefined) {
-        $options['multiSelect'] = true;
-    }
-    jQuery(function ($) {
-        $fileManager = $('#' + fileManagerId);
-        updateFileManager(path);
-    });
-}
-
-function fileManagerLoaded() {
-    jQuery(function ($) {
-        let $itemList = $fileManager.find('.item-list');
+    loaded: function () {
+        let $itemList = this.$fileManager.find('.item-list');
 
         let items = {};
-        if ($options['allowDownload']) {
+        if (this.options['allowDownload']) {
             items['download'] = {name: 'Download', icon: 'download'};
         }
-        if ($options['allowRename']) {
+        if (this.options['allowRename']) {
             items['rename'] = {name: 'Rename', icon: 'edit'};
         }
-        if ($options['allowDelete']) {
+        if (this.options['allowDelete']) {
             items['delete'] = {name: 'Delete', icon: 'delete'};
         }
 
@@ -83,7 +61,7 @@ function fileManagerLoaded() {
                 if (key === 'delete') {
                     let path = data.$trigger.data('location');
                     let item = data.$trigger.data('item');
-                    $.ajax({
+                    jQuery.ajax({
                         type: "POST",
                         url: urls.ajax,
                         data: {
@@ -92,14 +70,14 @@ function fileManagerLoaded() {
                             'item': item,
                         },
                         success: function (data) {
-                            updateFileManager($itemList.data('path'));
+                            ssvFileManager.update($itemList.data('path'));
                         }
                     });
                 } else if (key === 'download') {
                     let path = data.$trigger.data('location');
                     let item = data.$trigger.data('item');
                     path = path.replace(urls.basePath, '');
-                    let a = $("<a>")
+                    let a = jQuery("<a>")
                         .attr("href", urls.base + '/' + path + '/' + item)
                         .attr("download", item)
                         .appendTo("body");
@@ -121,18 +99,18 @@ function fileManagerLoaded() {
                         '<td></td>' +
                         '</tr>';
                     data.$trigger.replaceWith(row);
-                    $('#rename-item-icon').css('margin', '4px 10px');
-                    let $newNameInput = $("input[name='newItemName']");
+                    jQuery('#rename-item-icon').css('margin', '4px 10px');
+                    let $newNameInput = jQuery("input[name='newItemName']");
                     $newNameInput.focus();
                     $newNameInput.val(oldName);
-                    $("#renameForm").submit(function (event) {
+                    jQuery("#renameForm").submit(function (event) {
                         event.preventDefault();
-                        $.ajax({
+                        jQuery.ajax({
                             type: "POST",
                             url: urls.ajax,
-                            data: $("#renameForm").serialize(),
+                            data: jQuery("#renameForm").serialize(),
                             success: function (data) {
-                                updateFileManager($itemList.data('path'));
+                                ssvFileManager.update($itemList.data('path'));
                             }
                         });
                     });
@@ -143,70 +121,70 @@ function fileManagerLoaded() {
             },
             items: items
         };
-        $('ul.context-menu-root').remove();
+        jQuery('ul.context-menu-root').remove();
         $itemList.contextMenu({
             selector: 'tr:not(.no-menu)',
             callback: contextMenu.callback,
             items: contextMenu.items,
         });
-        $fileManager.contextMenu({
+        this.$fileManager.contextMenu({
             selector: '.item-actions',
             trigger: 'left',
             callback: contextMenu.callback,
             items: contextMenu.items,
         });
-        if ($options['selectableFiles']) {
-            $fileManager.find('tr.selectable.file').click(function (event) {
-                if (!event.ctrlKey || !$options['multiSelect']) {
-                    $fileManager.find('tr.selectable.file').removeClass('selected');
-                    $(this).addClass('selected');
+        if (this.options['selectableFiles']) {
+            this.$fileManager.find('tr.selectable.file').click(function (event) {
+                if (!event.ctrlKey || !this.options['multiSelect']) {
+                    this.$fileManager.find('tr.selectable.file').removeClass('selected');
+                    jQuery(this).addClass('selected');
                 } else {
-                    $(this).toggleClass('selected');
+                    jQuery(this).toggleClass('selected');
                 }
             });
         }
 
-        if ($options['selectableFolders']) {
-            $fileManager.find('tr.selectable.folder').click(function (event) {
-                if (!event.ctrlKey || !$options['multiSelect']) {
-                    $fileManager.find('tr.selectable.folder').removeClass('selected');
-                    $(this).addClass('selected');
+        if (this.options['selectableFolders']) {
+            this.$fileManager.find('tr.selectable.folder').click(function (event) {
+                if (!event.ctrlKey || !this.options['multiSelect']) {
+                    this.$fileManager.find('tr.selectable.folder').removeClass('selected');
+                    jQuery(this).addClass('selected');
                 } else {
-                    $(this).toggleClass('selected');
+                    jQuery(this).toggleClass('selected');
                 }
             });
         }
-        $('.dbclick-navigate').dblclick(function () {
-            let path = $(this).data('location');
-            let item = $(this).data('item');
+        jQuery('.dbclick-navigate').dblclick(function () {
+            let path = jQuery(this).data('location');
+            let item = jQuery(this).data('item');
             if (item) {
-                path += '/' + $(this).data('item')
+                path += '/' + jQuery(this).data('item')
             }
-            updateFileManager(path);
+            ssvFileManager.update(path);
         });
-        $('.dbclick-download').dblclick(function () {
-            let path = $(this).data('location');
-            let item = $(this).data('item');
+        jQuery('.dbclick-download').dblclick(function () {
+            let path = jQuery(this).data('location');
+            let item = jQuery(this).data('item');
             path = path.replace(urls.basePath, '');
-            let a = $("<a>")
+            let a = jQuery("<a>")
                 .attr("href", urls.base + '/' + path + '/' + item)
                 .attr("download", item)
                 .appendTo("body");
             a[0].click();
             a.remove();
         });
-        $fileManager.find('tr td span[data-location]').click(function (event) {
-            if (!event.ctrlKey && $(this).has('form').length === 0) {
-                let path = $(this).data('location');
-                let item = $(this).data('item');
+        this.$fileManager.find('tr td span[data-location]').click(function (event) {
+            if (!event.ctrlKey && jQuery(this).has('form').length === 0) {
+                let path = jQuery(this).data('location');
+                let item = jQuery(this).data('item');
                 if (item) {
-                    path += '/' + $(this).data('item')
+                    path += '/' + jQuery(this).data('item')
                 }
-                updateFileManager(path);
+                ssvFileManager.update(path);
             }
         });
-        $('#addFolder').click(function () {
-            let path = $(this).data('path');
+        jQuery('#addFolder').click(function () {
+            let path = jQuery(this).data('path');
             let row = '<tr id="new-folder">' +
                 '<td class="item-name">' +
                 '<svg><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
@@ -219,29 +197,19 @@ function fileManagerLoaded() {
                 '</td>' +
                 '<td></td>' +
                 '</tr>';
-            $itemList.find('tr')[0].before($.parseHTML(row)[0]);
-            $("#newFolderForm").submit(function (event) {
+            $itemList.find('tr')[0].before(jQuery.parseHTML(row)[0]);
+            jQuery("#newFolderForm").submit(function (event) {
                 event.preventDefault();
-                $.ajax({
+                jQuery.ajax({
                     type: "POST",
                     url: urls.ajax,
-                    data: $("#newFolderForm").serialize(),
+                    data: jQuery("#newFolderForm").serialize(),
                     success: function (data) {
-                        updateFileManager(path);
+                        ssvFileManager.update(path);
                     }
                 });
             });
         });
-        $('#uploadPath').val($fileManager.children('.item-list').data('path'));
-    });
-}
-
-Dropzone.options.uploadFile = {
-    init: function () {
-        this.on("success", function (file) {
-            let path = $fileManager.children('.item-list').data('path');
-            updateFileManager(path);
-            this.removeAllFiles();
-        });
+        jQuery('#uploadPath').val(this.$fileManager.children('.item-list').data('path'));
     }
 };

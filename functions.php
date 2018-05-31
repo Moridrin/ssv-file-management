@@ -79,7 +79,7 @@ function mp_ssv_frontend_file_manager_filter($content)
         ?>
         <div id="fileManager"></div>
         <script>
-            fileManagerInit('fileManager', null);
+            ssvFileManager.init('fileManager', null);
         </script>
         <?php
         $content = str_replace('[ssv_file_manager]', ob_get_clean(), $content);
