@@ -5,6 +5,7 @@ function mp_ssv_file_manager_shortcode($atts)
     wp_enqueue_style('ssv_dropzone');
     wp_enqueue_style('ssv_context_menu');
     wp_enqueue_style('ssv_frontend_file_manager_css');
+
     wp_enqueue_script('ssv_dropzone');
     wp_enqueue_script('ssv_context_menu');
     wp_enqueue_script('ssv_frontend_file_manager_js');

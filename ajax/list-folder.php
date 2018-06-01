@@ -84,7 +84,7 @@ function mp_ssv_ajax_list_folder()
                 <?php
             } else {
                 ?>
-                <tr class="dbclick-download file" data-path="<?=BaseFunctions::escape($item['path'], 'attr')?>" data-filename="<?=BaseFunctions::escape($item['basename'], 'attr')?>">
+                <tr class="dbclick-open file" data-path="<?=BaseFunctions::escape($item['path'], 'attr')?>" data-filename="<?=BaseFunctions::escape($item['basename'], 'attr')?>">
                     <td class="item-name" title="<?=BaseFunctions::escape($item['filename'], 'attr')?>">
                         <span>
                             <svg>

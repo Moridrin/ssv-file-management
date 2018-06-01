@@ -66,6 +66,8 @@ class SSV_FileManager
         wp_register_style('ssv_dropzone', plugins_url().'/ssv-file-manager/css/dropzone.css');
         wp_register_style('ssv_context_menu', plugins_url().'/ssv-file-manager/css/jquery.contextMenu.css');
         wp_register_style('ssv_frontend_file_manager_css', plugins_url().'/ssv-file-manager/css/ssv-file-manager.css');
+
+        wp_enqueue_style('fa_icons', plugins_url().'/ssv-file-manager/css/fontawesome-all.css');
     }
 
     public static function registerScripts()

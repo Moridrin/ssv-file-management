@@ -32,36 +32,33 @@ let fileManager = {
         let folderItems = {};
         if (this.allowEdit) {
             fileItems = {
-                download: {name: 'Download', icon: 'download'},
-                edit: {name: 'Edit', icon: 'edit'},
-                delete: {name: 'Delete', icon: 'delete'},
+                open: {name: 'Open', icon: 'fa-external-link-alt'},
+                edit: {name: 'Edit', icon: 'fa-edit'},
+                delete: {name: 'Delete', icon: 'fa-trash'},
             };
             folderItems = {
-                edit: {name: 'Edit', icon: 'edit'},
-                delete: {name: 'Delete', icon: 'delete'},
+                delete: {name: 'Delete', icon: 'fa-trash'},
             };
         } else {
             fileItems = {
-                download: {name: 'Download', icon: 'download'},
+                open: {name: 'Open', icon: 'fa-external-link-alt'},
             };
         }
         let contextMenu = function (key, data) {
             if (key === 'delete') {
                 let path = data.$trigger.data('path');
-                let item = data.$trigger.data('item');
                 jQuery.ajax({
                     type: "POST",
                     url: fileManager.params.urls.ajax,
                     data: {
-                        'action': 'mp_ssv_file_manager_delete_item',
+                        'action': 'mp_ssv_file_manager_delete',
                         'path': path,
-                        'item': item,
                     },
                     success: function (data) {
                         fileManager.update($itemList.data('path'));
                     }
                 });
-            } else if (key === 'download') {
+            } else if (key === 'open') {
                 let path = jQuery(this).data('path');
                 let filename = jQuery(this).data('filename');
                 if (filename === undefined) {
@@ -71,7 +68,7 @@ let fileManager = {
                 let a = jQuery("<a>")
                     .attr("href", fileManager.params.urls.base + path)
                     .attr("target", "_blank")
-                    .attr("download", filename)
+                    .attr("open", filename)
                     .appendTo("body");
                 a[0].click();
                 a.remove();
@@ -142,14 +139,14 @@ let fileManager = {
             let path = jQuery(this).data('path');
             fileManager.update(path);
         });
-        jQuery('.dbclick-download').dblclick(function () {
+        jQuery('.dbclick-open').dblclick(function () {
             let path = jQuery(this).data('path');
             let filename = jQuery(this).data('filename');
             path = path.replace(fileManager.params.urls.basePath, '');
             let a = jQuery("<a>")
                 .attr("href", fileManager.params.urls.base + path)
                 .attr("target", "_blank")
-                .attr("download", filename)
+                .attr("open", filename)
                 .appendTo("body");
             a[0].click();
             a.remove();

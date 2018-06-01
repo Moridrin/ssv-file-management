@@ -92,7 +92,7 @@
     content: "\EA08";
 }
 
-.context-menu-icon::before {
+.context-menu-icon:not(.fa)::before {
     position: absolute;
     top: 50%;
     left: 0;
@@ -137,10 +137,9 @@
     top: 50%;
     left: 0;
     width: 2em;
-    font-family: FontAwesome;
+    font-family: 'Font Awesome 5 Free';
     font-size: 1em;
     font-style: normal;
-    font-weight: normal;
     line-height: 1;
     color: #2980B9;
     text-align: center;
