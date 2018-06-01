@@ -1,4 +1,6 @@
-<?php
+<?
+declare(strict_types=1);
+
 function mp_ssv_file_manager_shortcode($atts)
 {
     wp_enqueue_style('ssv_dropzone');
