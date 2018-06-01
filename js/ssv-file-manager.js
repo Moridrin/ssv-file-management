@@ -33,11 +33,11 @@ let fileManager = {
         if (this.allowEdit) {
             fileItems = {
                 download: {name: 'Download', icon: 'download'},
-                rename: {name: 'Rename', icon: 'edit'},
+                edit: {name: 'Edit', icon: 'edit'},
                 delete: {name: 'Delete', icon: 'delete'},
             };
             folderItems = {
-                rename: {name: 'Rename', icon: 'edit'},
+                edit: {name: 'Edit', icon: 'edit'},
                 delete: {name: 'Delete', icon: 'delete'},
             };
         } else {
@@ -75,32 +75,32 @@ let fileManager = {
                     .appendTo("body");
                 a[0].click();
                 a.remove();
-            } else if (key === 'rename') {
-                let oldName = data.$trigger.find('span span').text();
-                let row = '<tr id="rename-item">' +
-                    '<td class="item-name">' +
-                    '<svg id="rename-item-icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + fileManager.params.urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
-                    '<form id="renameForm">' +
-                    '<input type="hidden" name="action" value="mp_ssv_file_manager_rename_item">' +
-                    '<input type="hidden" name="path" value="' + data.$trigger.data('path') + '">' +
-                    '<input type="hidden" name="oldItemName" value="' + oldName + '">' +
-                    '<input type="text" name="newItemName" style="height: 35px; width: calc(100% - 90px); float: left; margin: 4px 0;">' +
-                    '<button type="submit" class="inline" style="margin: 4px 0;"><svg style="margin: 0; height: 15px; width: 15px;"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + fileManager.params.urls.plugins + '/ssv-file-manager/images/sprite_icons.svg#apply"></use></svg></button>' +
-                    '</form>' +
-                    '</td>' +
-                    '<td></td>' +
+            } else if (key === 'edit') {
+                let oldPath = data.$trigger.data('path');
+                let row = '' +
+                    '<tr id="edit-item">' +
+                    '   <td class="item-name">' +
+                    '       <svg id="edit-item-icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + fileManager.params.urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
+                    '       <form id="editForm">' +
+                    '           <input type="hidden" name="action" value="mp_ssv_file_manager_edit">' +
+                    '           <input type="hidden" name="oldPath" value="' + oldPath + '">' +
+                    '           <input type="text" name="newPath" style="height: 35px; width: calc(100% - 90px); float: left; margin: 4px 0;">' +
+                    '           <button type="submit" class="inline" style="margin: 4px 0;"><svg style="margin: 0; height: 15px; width: 15px;"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + fileManager.params.urls.plugins + '/ssv-file-manager/images/sprite_icons.svg#apply"></use></svg></button>' +
+                    '       </form>' +
+                    '   </td>' +
+                    '   <td></td>' +
                     '</tr>';
                 data.$trigger.replaceWith(row);
-                jQuery('#rename-item-icon').css('margin', '4px 10px');
-                let $newNameInput = jQuery("input[name='newItemName']");
+                jQuery('#edit-item-icon').css('margin', '4px 10px');
+                let $newNameInput = jQuery("input[name='newPath']");
                 $newNameInput.focus();
-                $newNameInput.val(oldName);
-                jQuery("#renameForm").submit(function (event) {
+                $newNameInput.val(oldPath);
+                jQuery("#editForm").submit(function (event) {
                     event.preventDefault();
                     jQuery.ajax({
                         type: "POST",
                         url: fileManager.params.urls.ajax,
-                        data: jQuery("#renameForm").serialize(),
+                        data: jQuery("#editForm").serialize(),
                         success: function (data) {
                             fileManager.update($itemList.data('path'));
                         }

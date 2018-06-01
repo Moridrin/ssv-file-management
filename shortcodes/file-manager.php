@@ -1,5 +1,4 @@
-<?
-declare(strict_types=1);
+<?php
 
 function mp_ssv_file_manager_shortcode($atts)
 {

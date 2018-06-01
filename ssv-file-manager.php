@@ -22,3 +22,4 @@ require_once 'SSV_FileManager.php';
 require_once 'shortcodes/file-manager.php';
 // require_once 'options/options.php';
 require_once 'ajax/list-folder.php';
+require_once 'ajax/edit.php';
