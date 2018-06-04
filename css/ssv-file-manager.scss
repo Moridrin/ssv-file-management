@@ -60,6 +60,24 @@
     td.item-actions-unavailable svg {
       visibility: hidden;
     }
+
+    td.folder-actions,
+    td.folder-actions-unavailable {
+      vertical-align: middle;
+      cursor: pointer;
+      padding: 4px;
+
+      svg {
+        width: 16px;
+        height: 35px;
+        float: left;
+        margin: 0 8px;
+      }
+    }
+
+    td.folder-actions-unavailable svg {
+      visibility: hidden;
+    }
   }
 }
 

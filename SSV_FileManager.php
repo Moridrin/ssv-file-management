@@ -5,13 +5,14 @@ namespace mp_ssv_file_manager;
 use Aws\S3\S3Client;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
+use mp_general\base\SSV_Global;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
 define('SSV_FILE_MANAGER_PATH', plugin_dir_path(__FILE__));
-define('SSV_FILE_MANAGER_URL', plugins_url().'/ssv-file-manager/');
+define('SSV_FILE_MANAGER_URL', plugins_url() . '/ssv-file-manager/');
 
 class SSV_FileManager
 {
@@ -22,7 +23,8 @@ class SSV_FileManager
 
     public static function setup()
     {
-
+        $role = get_role('administrator');
+        $role->add_cap('manage_files');
     }
 
     public static function deactivate()
@@ -63,20 +65,20 @@ class SSV_FileManager
 
     public static function registerStyles()
     {
-        wp_register_style('ssv_dropzone', plugins_url().'/ssv-file-manager/css/dropzone.css');
-        wp_register_style('ssv_context_menu', plugins_url().'/ssv-file-manager/css/jquery.contextMenu.css');
-        wp_register_style('ssv_frontend_file_manager_css', plugins_url().'/ssv-file-manager/css/ssv-file-manager.css');
+        wp_register_style('ssv_dropzone', plugins_url() . '/ssv-file-manager/css/dropzone.css');
+        wp_register_style('ssv_context_menu', plugins_url() . '/ssv-file-manager/css/jquery.contextMenu.css');
+        wp_register_style('ssv_frontend_file_manager', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
 
-        wp_enqueue_style('fa_icons', plugins_url().'/ssv-file-manager/css/fontawesome-all.css');
+        wp_enqueue_style('fa_icons', plugins_url() . '/ssv-file-manager/css/fontawesome-all.css');
     }
 
     public static function registerScripts()
     {
-        wp_register_script('ssv_dropzone', plugins_url().'/ssv-file-manager/js/dropzone.js', ['jquery']);
-        wp_register_script('ssv_context_menu', plugins_url().'/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
-        wp_register_script('ssv_frontend_file_manager_js', plugins_url().'/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
+        wp_register_script('ssv_dropzone', plugins_url() . '/ssv-file-manager/js/dropzone.js', ['jquery']);
+        wp_register_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
+        wp_register_script('ssv_frontend_file_manager', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
         wp_localize_script(
-            'ssv_frontend_file_manager_js',
+            'ssv_frontend_file_manager',
             'mp_ssv_file_manager_params',
             [
                 'urls'    => [
@@ -85,16 +87,15 @@ class SSV_FileManager
                     'base'     => 'https://essf-social.ams3.digitaloceanspaces.com/',
                     'basePath' => ABSPATH,
                 ],
-                'actions' => [
-                    'add_folder' => 'ssv_file_manager_add_folder',
-                    'delete'     => 'ssv_file_manager_delete',
-                ],
+                'actions' => Ajax::$callables,
             ]
         );
+
+        wp_enqueue_script('mp-ssv-general-functions', SSV_Global::URL . '/js/general-functions.js', ['jquery']);
     }
 }
 
-register_activation_hook(SSV_FILE_MANAGER_PATH.'ssv-file-manager.php', [SSV_FileManager::class, 'setup']);
-register_deactivation_hook(SSV_FILE_MANAGER_PATH.'ssv-file-manager.php', [SSV_FileManager::class, 'deactivate']);
+register_activation_hook(SSV_FILE_MANAGER_PATH . 'ssv-file-manager.php', [SSV_FileManager::class, 'setup']);
+register_deactivation_hook(SSV_FILE_MANAGER_PATH . 'ssv-file-manager.php', [SSV_FileManager::class, 'deactivate']);
 add_action('wp_enqueue_scripts', [SSV_FileManager::class, 'registerStyles']);
 add_action('wp_enqueue_scripts', [SSV_FileManager::class, 'registerScripts']);

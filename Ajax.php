@@ -1,106 +1,116 @@
-<?
-declare(strict_types=1);
-
+<?php
 
 namespace mp_ssv_file_manager;
 
-use HttpInvalidParamException;
+use Exception;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
+use mp_general\base\BaseFunctions;
 use mp_general\base\SSV_Global;
 use mp_ssv_file_manager\templates\FolderView;
 
 class Ajax
 {
-    /**
-     * @throws HttpInvalidParamException
-     */
+
+    public static $callables = [];
+
     public static function createFolder()
     {
-        if (!isset($_POST['path']) || !isset($_POST['newFolderName'])) {
-            throw new HttpInvalidParamException('The "path" or "newFolderName" parameter isn\'t provided.');
-        }
-        $fileManager = SSV_FileManager::connect();
-        $fileManager->createDir($_POST['path'].DIRECTORY_SEPARATOR.$_POST['newFolderName']);
-        wp_die(json_encode(['success' => true]));
+        BaseFunctions::checkParameters('path', 'newFolderName');
+        $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text') . DIRECTORY_SEPARATOR . BaseFunctions::sanitize($_REQUEST['newFolderName'], 'text');
+        $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
+        SSV_FileManager::connect()->createDir($encodedPath);
+        wp_die(json_encode(['success' => true, 'path' => $path, 'encodedPath' => $encodedPath]));
     }
 
-    /**
-     * @throws HttpInvalidParamException
-     */
     public static function deleteFile()
     {
-        if (!isset($_POST['path'])) {
-            throw new HttpInvalidParamException('The "path" parameter isn\'t provided.');
-        }
-        $fileManager = SSV_FileManager::connect();
+        BaseFunctions::checkParameters('path');
         try {
-            $fileManager->delete($_POST['path']);
+            $fileManager = SSV_FileManager::connect();
+            $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text');
+            $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
+            $fileManager->delete($encodedPath);
+            wp_die(json_encode(['success' => true, 'path' => $path, 'encodedPath' => $encodedPath]));
         } catch (FileNotFoundException $e) {
             SSV_Global::addError($e->getMessage());
             wp_die(json_encode(['success' => false]));
         }
-        wp_die(json_encode(['success' => true]));
     }
 
-    /**
-     * @throws HttpInvalidParamException
-     */
     public static function deleteFolder()
     {
-        if (!isset($_POST['path'])) {
-            throw new HttpInvalidParamException('The "path" parameter isn\'t provided.');
-        }
-        $fileManager = SSV_FileManager::connect();
-        $fileManager->deleteDir($_POST['path']);
-        wp_die(json_encode(['success' => true]));
+        BaseFunctions::checkParameters('path');
+        $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text');
+        $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
+        SSV_FileManager::connect()->deleteDir($encodedPath);
+        wp_die(json_encode(['success' => true, 'path' => $path, 'encodedPath' => $encodedPath]));
     }
 
     /**
-     * @throws HttpInvalidParamException
+     * @throws Exception
      */
     public static function editFile()
     {
-        if (!isset($_POST['oldPath']) || !isset($_POST['newPath'])) {
-            throw new HttpInvalidParamException('The "path" parameter isn\'t provided.');
-        }
-        $fileManager = SSV_FileManager::connect();
+        BaseFunctions::checkParameters('oldPath', 'newPath');
         try {
-            $fileManager->rename($_POST['oldPath'], $_POST['newPath']);
+            $fileManager    = SSV_FileManager::connect();
+            $oldPath        = BaseFunctions::sanitize($_REQUEST['oldPath'], 'text');
+            $encodedOldPath = BaseFunctions::encodeUnderscoreBase64($oldPath);
+            $newPath        = BaseFunctions::sanitize($_REQUEST['oldPath'], 'text');
+            $encodedNewPath = BaseFunctions::encodeUnderscoreBase64($newPath);
+            $fileManager->rename($encodedOldPath, $encodedNewPath);
+            wp_die(json_encode(['success' => true, 'oldPath' => $oldPath, 'encodedOldPath' => $encodedOldPath, 'newPath' => $newPath, 'encodedNewPath' => $encodedNewPath]));
         } catch (FileExistsException | FileNotFoundException $e) {
             SSV_Global::addError($e->getMessage());
             wp_die(json_encode(['success' => false]));
         }
-        wp_die(json_encode(['success' => true]));
     }
 
     /**
-     * @throws HttpInvalidParamException
+     * @throws Exception
      */
     public static function uploadFile()
     {
-        if (!isset($_POST['path'])) {
-            throw new HttpInvalidParamException('The "path" parameter isn\'t provided.');
-        }
+        BaseFunctions::checkParameters('path', 'fileName');
+        $fileManager     = SSV_FileManager::connect();
+        $path            = BaseFunctions::sanitize($_REQUEST['path'], 'text');
+        $encodedPath     = BaseFunctions::encodeUnderscoreBase64($path);
+        $fileName        = BaseFunctions::sanitize($_REQUEST['fileName'], 'text');
+        $encodedFileName = BaseFunctions::encodeUnderscoreBase64($fileName);
+        $fileData        = file_get_contents($_FILES['file']['tmp_name']);
+        $fileManager->put($encodedPath . DIRECTORY_SEPARATOR . $encodedFileName, $fileData, ['visibility' => AdapterInterface::VISIBILITY_PUBLIC]);
+        wp_die(json_encode(['success' => true, 'path' => $path, 'encodedPath' => $encodedPath, 'fileName' => $fileName, 'encodedFileName' => $encodedFileName]));
+    }
+
+    public static function downloadFile()
+    {
+        BaseFunctions::checkParameters('path');
         $fileManager = SSV_FileManager::connect();
-        $fileManager->put($_POST['path'].DIRECTORY_SEPARATOR.$_FILES['file']['name'], file_get_contents($_FILES["file"]["tmp_name"]), ['visibility' => AdapterInterface::VISIBILITY_PUBLIC]);
-        wp_die();
+        $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text');
+        $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
+        $file        = $fileManager->get($encodedPath);
+        $fileName    = BaseFunctions::decodeUnderscoreBase64($file->getMetadata()['filename']);
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        $file->read();
+        die();
     }
 
     public static function listFolder()
     {
-        $filesystem = SSV_FileManager::connect();
-        $path       = $_POST['path'] ?? DIRECTORY_SEPARATOR;
-        $pathArray  = explode(DIRECTORY_SEPARATOR, $path);
-        $folderName = end($pathArray);
+        $filesystem  = SSV_FileManager::connect();
+        $path        = BaseFunctions::sanitize($_REQUEST['path'] ?? DIRECTORY_SEPARATOR, 'text');
+        $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
+        $pathArray   = explode(DIRECTORY_SEPARATOR, $encodedPath);
+        $folderName  = end($pathArray);
         if (empty($folderName)) {
             $folderName = 'HOME';
         }
-        $items = $filesystem->listContents($path);
+        $items = $filesystem->listContents($encodedPath);
         usort(
             $items,
-            function ($a, $b) use ($path) {
+            function ($a, $b) {
                 $aIsDir = $a['type'] === 'dir';
                 $bIsDir = $b['type'] === 'dir';
                 if (($aIsDir && $bIsDir) || (!$aIsDir && !$bIsDir)) {
@@ -114,16 +124,18 @@ class Ajax
                 }
             }
         );
-        FolderView::show($folderName, $path, $items);
+        FolderView::show($folderName, $encodedPath, $items);
         wp_die();
     }
 }
 
-add_action('wp_ajax_mp_ssv_file_manager_create_folder', [Ajax::class, 'createFolder']);
-add_action('wp_ajax_mp_ssv_file_manager_upload_file', [Ajax::class, 'uploadFile']);
-add_action('wp_ajax_mp_ssv_file_manager_edit_file', [Ajax::class, 'editFile']);
-add_action('wp_ajax_mp_ssv_file_manager_delete_file', [Ajax::class, 'deleteFile']);
-add_action('wp_ajax_mp_ssv_file_manager_delete_folder', [Ajax::class, 'deleteFolder']);
+foreach (get_class_methods(Ajax::class) as $method) {
+    $callable                 = __NAMESPACE__ . '__' . BaseFunctions::toSnakeCase($method);
+    Ajax::$callables[$method] = $callable;
+    add_action('wp_ajax_' . $callable, [Ajax::class, $method]);
+    if (get_option($callable . '_without_login', ($method === 'listFolder'))) {
+        add_action('wp_ajax_nopriv_' . $callable, [Ajax::class, $method]);
+    }
+}
 
-add_action('wp_ajax_mp_ssv_ajax_list_folder', [Ajax::class, 'listFolder']);
-add_action('wp_ajax_nopriv_mp_ssv_ajax_list_folder', [Ajax::class, 'listFolder']);
+// \mp_general\base\BaseFunctions::var_export(Ajax::$callables, true);

@@ -11,106 +11,129 @@ class FolderView
 
     public const ROOT_FOLDER = SSV_FILE_MANAGER_ROOT_FOLDER;
 
-    public static function show(string $folderName, string $path, array $items)
+    public static function show(string $encodedFolderName, string $encodedPath, array $encodedItems)
     {
         ?>
-        <h1 id="currentFolderTitle" style="display: inline-block"><?=BaseFunctions::escape($folderName, 'html')?></h1>
+        <h1 id="currentFolderTitle" style="display: inline-block" data-path="<?= BaseFunctions::escape($encodedPath, 'attr') ?>"><?= BaseFunctions::escape(BaseFunctions::decodeUnderscoreBase64($encodedFolderName), 'html') ?></h1>
         <?php
-        if (current_user_can('administrator')) {
+        if (current_user_can('manage_files')) {
             ?>
-            <button id="addFolder" class="button button-primary" style="float: right" data-path="<?=BaseFunctions::escape($path, 'attr')?>">Add Folder</button>
+            <button id="addFolder" class="button button-primary" style="float: right" data-path="<?= BaseFunctions::escape($encodedPath, 'attr') ?>">Add Folder</button>
             <?php
         }
         ?>
         <br/>
-        <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" data-path="<?=BaseFunctions::escape($path, 'attr')?>" style="width: 100%;">
+        <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" data-path="<?= BaseFunctions::escape($encodedPath, 'attr') ?>" style="width: 100%;">
             <colgroup>
                 <col width="auto"/>
                 <col width="36px"/>
             </colgroup>
             <?php
-            if ($path !== self::ROOT_FOLDER) {
-                if ($path === $folderName) {
+            if ($encodedPath !== self::ROOT_FOLDER) {
+                if ($encodedPath === $encodedFolderName) {
                     $folderUp = self::ROOT_FOLDER;
                 } else {
-                    $folderUp = str_replace(DIRECTORY_SEPARATOR.$folderName, '', $path);
+                    $folderUp = str_replace(DIRECTORY_SEPARATOR . $encodedFolderName, '', $encodedPath);
                 }
                 self::showFolderUp($folderUp);
             }
-            foreach ($items as $item) {
-                if ($item['type'] === 'dir') {
-                    self::showFolder($item);
+            foreach ($encodedItems as $encodedItem) {
+                $itemName = BaseFunctions::decodeUnderscoreBase64($encodedItem['filename']);
+                if ($itemName === false || mb_check_encoding($itemName) === false) {
+                    continue; // Don't show files and folders that haven't been uploaded with this plugin.
+                }
+                if ($encodedItem['type'] === 'dir') {
+                    self::showFolder($encodedItem, $itemName);
                 } else {
-                    self::showFile($item);
+                    self::showFile($encodedItem, $itemName);
                 }
             }
             ?>
         </table>
-        <form id="uploadForm" enctype="multipart/form-data" data-path="<?=BaseFunctions::escape($path, 'attr')?>">
-            <input type="hidden" name="action" value="mp_ssv_file_manager_upload_file">
-            <input type="file" id="uploadFile" name="upload">
-            <button id="uploadSubmit" type="submit" class="button button-primary" style="float: right">Upload</button>
-        </form>
         <?php
+        if (current_user_can('manage_files')) {
+            ?>
+            <input type="file" id="fileUploadInput" style="display: none;" multiple>
+            <div id="dropTarget" style="cursor: pointer; border: 5px dashed #bbb; text-align: center; line-height: 150px;">Drop Files to Upload</div>
+            <script>
+                (function () {
+                    let fileUploadInput = document.getElementById('fileUploadInput');
+                    let dropTarget = document.getElementById('dropTarget');
+                    if (window.File && window.FileList && window.FileReader) {
+                        let xhr = new XMLHttpRequest();
+                        if (xhr.upload) {
+                            dropTarget.addEventListener('click', function (event) {
+                                fileUploadInput.click();
+                            }, false);
+                            fileUploadInput.addEventListener('change', fileManager.uploader.FileSelectHandler, false);
+                            dropTarget.addEventListener('drop', fileManager.uploader.FileSelectHandler, false);
+                            dropTarget.addEventListener('dragover', function (event) { event.preventDefault(); });
+                            dropTarget.addEventListener('dragleave', function (event) { event.preventDefault(); });
+                        }
+                    }
+                })();
+            </script>
+            <?php
+        }
     }
 
     private static function showFolderUp(string $path)
     {
         ?>
-        <tr data-path="<?=BaseFunctions::escape($path, 'attr')?>" class="dbclick-navigate no-menu">
+        <tr data-path="<?= BaseFunctions::escape($path, 'attr') ?>" class="dbclick-navigate no-menu">
             <td class="item-name" title="Parent Folder">
-                <span data-path="<?=BaseFunctions::escape($path, 'attr')?>">
+                <span data-path="<?= BaseFunctions::escape($path, 'attr') ?>">
                     <svg>
-                        <use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/folder-up.svg#folder-up"></use>
+                        <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/folder-up.svg#folder-up"></use>
                     </svg>
                     <span>..</span>
                 </span>
             </td>
             <td class="item-actions-unavailable">
                 <svg>
-                    <use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
+                    <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
                 </svg>
             </td>
         </tr>
         <?php
     }
 
-    private static function showFolder(array $item)
+    private static function showFolder(array $item, string $itemName)
     {
         ?>
-        <tr class="dbclick-navigate folder" data-path="<?=BaseFunctions::escape($item['path'], 'attr')?>">
-            <td class="item-name" title="<?=BaseFunctions::escape($item['filename'], 'attr')?>">
-                <span data-path="<?=BaseFunctions::escape($item['path'], 'attr')?>">
+        <tr class="dbclick-navigate folder" data-path="<?= BaseFunctions::escape($item['path'], 'attr') ?>">
+            <td class="item-name" title="<?= BaseFunctions::escape($itemName, 'attr') ?>">
+                <span data-path="<?= BaseFunctions::escape($item['path'], 'attr') ?>">
                     <svg>
-                        <use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/folder.svg#folder"></use>
+                        <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/folder.svg#folder"></use>
                     </svg>
-                    <span class="title"><?=BaseFunctions::escape($item['filename'], 'html')?></span>
+                    <span class="title"><?= BaseFunctions::escape($itemName, 'html') ?></span>
                 </span>
             </td>
             <td class="folder-actions">
                 <svg>
-                    <use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
+                    <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
                 </svg>
             </td>
         </tr>
         <?php
     }
 
-    private static function showFile(array $item)
+    private static function showFile(array $item, string $itemName)
     {
         ?>
-        <tr class="dbclick-open file" data-path="<?=BaseFunctions::escape($item['path'], 'attr')?>" data-filename="<?=BaseFunctions::escape($item['basename'], 'attr')?>">
-            <td class="item-name" title="<?=BaseFunctions::escape($item['filename'], 'attr')?>">
+        <tr class="dbclick-open file" data-path="<?= BaseFunctions::escape($item['path'], 'attr') ?>" data-filename="<?= BaseFunctions::escape($itemName, 'attr') ?>">
+            <td class="item-name" title="<?= BaseFunctions::escape($itemName, 'attr') ?>">
                 <span>
                     <svg>
-                        <use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/fileapi-upload-button.svg#fileapi-upload-button"></use>
+                        <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/fileapi-upload-button.svg#fileapi-upload-button"></use>
                     </svg>
-                    <span class="title"><?=BaseFunctions::escape($item['filename'], 'html')?></span>
+                    <span class="title"><?= BaseFunctions::escape($itemName, 'html') ?></span>
                 </span>
             </td>
             <td class="item-actions">
                 <svg>
-                    <use xlink:href="<?=plugins_url()?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
+                    <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#more"></use>
                 </svg>
             </td>
         </tr>

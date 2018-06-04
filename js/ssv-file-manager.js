@@ -1,7 +1,101 @@
+// noinspection JSUnresolvedVariable
 let fileManager = {
     params: mp_ssv_file_manager_params,
     $fileManager: undefined,
     allowEdit: false,
+
+    uploader: {
+
+        fileCount: 0,
+
+        traverseFileTree: function (item, path) {
+            path = path || '';
+            if (item.isFile) {
+                ++fileManager.uploader.fileCount;
+                item.file(function (file) {
+                    let formData = new FormData();
+                    formData.append('action', fileManager.params.actions.uploadFile);
+                    formData.append('path', path);
+                    formData.append('file', file);
+                    formData.append('fileName', item.name);
+                    jQuery.ajax({
+                        method: 'POST',
+                        url: fileManager.params.urls.ajax,
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function () {
+                            --fileManager.uploader.fileCount;
+                            if (fileManager.uploader.fileCount === 0) {
+                                fileManager.update(document.getElementById('itemList').dataset['path'])
+                            }
+                        }
+                    });
+                });
+            } else if (item.isDirectory) {
+                let formData = new FormData();
+                formData.append('action', fileManager.params.actions.createFolder);
+                formData.append('path', path);
+                formData.append('newFolderName', item.name);
+                jQuery.ajax({
+                    method: 'POST',
+                    url: fileManager.params.urls.ajax,
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function () {
+                        let dirReader = item.createReader();
+                        dirReader.readEntries(function (entries) {
+                            for (let i = 0; i < entries.length; i++) {
+                                fileManager.uploader.traverseFileTree(entries[i], path + item.name + "/");
+                            }
+                        });
+                    }
+                });
+            }
+        },
+
+        FileSelectHandler: function (event) {
+            event.preventDefault();
+            let path = document.getElementById('currentFolderTitle').dataset.path;
+            let items = event.target.files;
+            if (items) {
+                for (let i = 0, item; item = items[i]; i++) {
+                    ++fileManager.uploader.fileCount;
+                    let formData = new FormData();
+                    formData.append('fileName', item.name);
+                    formData.append('path', path);
+                    formData.append('file', item);
+                    jQuery.ajax({
+                        method: 'POST',
+                        url: fileManager.params.urls.ajax + '?action=' + encodeURIComponent(fileManager.params.actions.uploadFile),
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        success: function (data) {
+                            --fileManager.uploader.fileCount;
+                            if (fileManager.uploader.fileCount === 0) {
+                                fileManager.update(document.getElementById('itemList').dataset['path'])
+                            }
+                        }
+                    });
+                }
+            } else {
+                items = event.dataTransfer.items;
+                for (let i = 0, item; item = items[i]; i++) {
+                    fileManager.uploader.traverseFileTree(item.webkitGetAsEntry(), path);
+                }
+            }
+        },
+
+        ProgressHandler: function (e) {
+            let complete = Math.round(e.loaded / e.total * 100);
+            console.log(complete + "% complete");
+            if (complete === 100) {
+                console.log(e);
+            }
+        },
+    },
 
     init: function (fileManagerId, path, allowEdit) {
         fileManager.$fileManager = jQuery('#' + fileManagerId);
@@ -14,23 +108,24 @@ let fileManager = {
             method: 'POST',
             url: fileManager.params.urls.ajax,
             data: {
-                action: 'mp_ssv_ajax_list_folder',
+                action: fileManager.params.actions['listFolder'],
                 path: path,
                 options: fileManager.options,
             },
             success: function (data) {
                 fileManager.$fileManager.html(data);
                 fileManager.loaded();
+                window.history.pushState('', '', '?path='+path);
             }
         });
     },
 
     loaded: function () {
-        let $itemList = this.$fileManager.find('.item-list');
+        let $itemList = fileManager.$fileManager.find('.item-list');
 
         let fileItems = {};
         let folderItems = {};
-        if (this.allowEdit) {
+        if (fileManager.allowEdit) {
             fileItems = {
                 open: {name: 'Open', icon: 'fa-external-link-alt'},
                 edit_file: {name: 'Edit', icon: 'fa-edit'},
@@ -51,10 +146,10 @@ let fileManager = {
                     type: "POST",
                     url: fileManager.params.urls.ajax,
                     data: {
-                        'action': 'mp_ssv_file_manager_delete_file',
-                        'path': path,
+                        action: fileManager.params.actions['deleteFile'],
+                        path: path,
                     },
-                    success: function (data) {
+                    success: function () {
                         fileManager.update($itemList.data('path'));
                     }
                 });
@@ -64,8 +159,8 @@ let fileManager = {
                     type: "POST",
                     url: fileManager.params.urls.ajax,
                     data: {
-                        'action': 'mp_ssv_file_manager_delete_folder',
-                        'path': path,
+                        action: fileManager.params.actions['deleteFolder'],
+                        path: path,
                     },
                     success: function (data) {
                         fileManager.update($itemList.data('path'));
@@ -77,10 +172,10 @@ let fileManager = {
                 if (filename === undefined) {
                     return;
                 }
-                path = path.replace(fileManager.params.urls.basePath, '');
                 let a = jQuery("<a>")
                     .attr("href", fileManager.params.urls.base + path)
-                    .attr("target", "_blank")
+                    // .attr("target", "_blank")
+                    .attr("download", "test.txt")
                     .attr("open", filename)
                     .appendTo("body");
                 a[0].click();
@@ -92,7 +187,7 @@ let fileManager = {
                     '   <td class="item-name">' +
                     '       <svg id="edit-item-icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + fileManager.params.urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
                     '       <form id="editForm">' +
-                    '           <input type="hidden" name="action" value="mp_ssv_file_manager_edit_file">' +
+                    '           <input type="hidden" name="action" value="' + fileManager.params.actions['editFile'] + '">' +
                     '           <input type="hidden" name="oldPath" value="' + oldPath + '">' +
                     '           <input type="text" name="newPath" style="height: 35px; width: calc(100% - 90px); float: left; margin: 4px 0;">' +
                     '           <button type="submit" class="inline" style="margin: 4px 0;"><svg style="margin: 0; height: 15px; width: 15px;"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + fileManager.params.urls.plugins + '/ssv-file-manager/images/sprite_icons.svg#apply"></use></svg></button>' +
@@ -123,25 +218,27 @@ let fileManager = {
         };
 
         jQuery('ul.context-menu-root').remove();
-        $itemList.contextMenu({
-            selector: 'tr:not(.no-menu).dbclick-navigate',
-            callback: contextMenu,
-            items: folderItems,
-        });
+        if (fileManager.allowEdit) {
+            $itemList.contextMenu({
+                selector: 'tr:not(.no-menu).dbclick-navigate',
+                callback: contextMenu,
+                items: folderItems,
+            });
+        }
         $itemList.contextMenu({
             selector: 'tr:not(.no-menu):not(.dbclick-navigate)',
             callback: contextMenu,
             items: fileItems,
         });
-        if (this.allowEdit) {
-            this.$fileManager.contextMenu({
+        if (fileManager.allowEdit) {
+            fileManager.$fileManager.contextMenu({
                 selector: '.folder-actions',
                 trigger: 'left',
                 callback: contextMenu,
                 items: folderItems,
             });
         }
-        this.$fileManager.contextMenu({
+        fileManager.$fileManager.contextMenu({
             selector: '.item-actions',
             trigger: 'left',
             callback: contextMenu,
@@ -155,7 +252,6 @@ let fileManager = {
         jQuery('.dbclick-open').dblclick(function () {
             let path = jQuery(this).data('path');
             let filename = jQuery(this).data('filename');
-            path = path.replace(fileManager.params.urls.basePath, '');
             let a = jQuery("<a>")
                 .attr("href", fileManager.params.urls.base + path)
                 .attr("target", "_blank")
@@ -164,7 +260,7 @@ let fileManager = {
             a[0].click();
             a.remove();
         });
-        this.$fileManager.find('tr td span[data-path]').click(function (event) {
+        fileManager.$fileManager.find('tr td span[data-path]').click(function (event) {
             if (jQuery(this).has('form').length === 0) {
                 let path = jQuery(this).data('path');
                 fileManager.update(path);
@@ -177,7 +273,7 @@ let fileManager = {
                 '   <td class="item-name">' +
                 '       <svg><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + fileManager.params.urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
                 '       <form id="newFolderForm">' +
-                '           <input type="hidden" name="action" value="mp_ssv_file_manager_create_folder">' +
+                '           <input type="hidden" name="action" value="' + fileManager.params.actions['createFolder'] + '">' +
                 '           <input type="hidden" name="path" value="' + path + '">' +
                 '           <input type="text" name="newFolderName" style="height: 35px; width: calc(100% - 90px); float: left; margin: 0;">' +
                 '           <button type="submit" class="inline"><svg style="margin: 0; height: 15px; width: 15px;"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + fileManager.params.urls.plugins + '/ssv-file-manager/images/sprite_icons.svg#apply"></use></svg></button>' +
@@ -186,7 +282,12 @@ let fileManager = {
                 '   <td></td>' +
                 '</tr>'
             ;
-            $itemList.find('tr')[0].before(jQuery.parseHTML(row)[0]);
+            let firstItem = $itemList.find('tr')[0];
+            if (firstItem === undefined) {
+                $itemList.append(jQuery.parseHTML(row)[0]);
+            } else {
+                firstItem.before(jQuery.parseHTML(row)[0]);
+            }
             jQuery("#newFolderForm").submit(function (event) {
                 event.preventDefault();
                 jQuery.ajax({
@@ -203,7 +304,7 @@ let fileManager = {
             event.preventDefault();
             let path = jQuery(this).data('path');
             let formData = new FormData();
-            formData.append('action', 'mp_ssv_file_manager_upload_file');
+            formData.append('action', fileManager.params.actions['uploadFile']);
             formData.append('path', jQuery(this).data('path'));
             formData.append('file', jQuery('#uploadFile').prop('files')[0]);
             jQuery.ajax({
@@ -218,5 +319,5 @@ let fileManager = {
             });
         });
         // jQuery('#uploadPath').val(this.$fileManager.children('.item-list').data('path'));
-    }
+    },
 };
