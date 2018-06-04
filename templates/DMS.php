@@ -6,10 +6,10 @@ use mp_general\base\BaseFunctions;
 
 define('SSV_FILE_MANAGER_ROOT_FOLDER', get_option('ssv_file_manager__root_folder', DIRECTORY_SEPARATOR));
 
-class FolderView
+class DMS
 {
 
-    public const ROOT_FOLDER = SSV_FILE_MANAGER_ROOT_FOLDER;
+    public const APPLICATION_ROOT_FOLDER = SSV_FILE_MANAGER_ROOT_FOLDER;
 
     public static function show(string $encodedFolderName, string $encodedPath, array $encodedItems)
     {
@@ -29,9 +29,9 @@ class FolderView
                 <col width="36px"/>
             </colgroup>
             <?php
-            if ($encodedPath !== self::ROOT_FOLDER) {
+            if ($encodedPath !== self::APPLICATION_ROOT_FOLDER) {
                 if ($encodedPath === $encodedFolderName) { // If the path equals the folder the parent folder is the root folder
-                    $folderUp = self::ROOT_FOLDER;
+                    $folderUp = self::APPLICATION_ROOT_FOLDER;
                 } else {
                     $folderUp = BaseFunctions::decodeUnderscoreBase64(str_replace(DIRECTORY_SEPARATOR . $encodedFolderName, '', $encodedPath));
                 }

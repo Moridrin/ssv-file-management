@@ -14,7 +14,7 @@ let fileManager = {
                 ++fileManager.uploader.fileCount;
                 item.file(function (file) {
                     let formData = new FormData();
-                    formData.append('action', fileManager.params.actions.uploadFile);
+                    formData.append('action', fileManager.params.actions['uploadFile']);
                     formData.append('path', path);
                     formData.append('file', file);
                     formData.append('fileName', item.name);
@@ -34,7 +34,7 @@ let fileManager = {
                 });
             } else if (item.isDirectory) {
                 let formData = new FormData();
-                formData.append('action', fileManager.params.actions.createFolder);
+                formData.append('action', fileManager.params.actions['createFolder']);
                 formData.append('path', path);
                 formData.append('newFolderName', item.name);
                 jQuery.ajax({
@@ -73,6 +73,7 @@ let fileManager = {
                         contentType: false,
                         processData: false,
                         success: function (data) {
+                            console.log(JSON.parse(data));
                             --fileManager.uploader.fileCount;
                             if (fileManager.uploader.fileCount === 0) {
                                 fileManager.update(document.getElementById('itemList').dataset['path'])
@@ -85,14 +86,6 @@ let fileManager = {
                 for (let i = 0, item; item = items[i]; i++) {
                     fileManager.uploader.traverseFileTree(item.webkitGetAsEntry(), path);
                 }
-            }
-        },
-
-        ProgressHandler: function (e) {
-            let complete = Math.round(e.loaded / e.total * 100);
-            console.log(complete + "% complete");
-            if (complete === 100) {
-                console.log(e);
             }
         },
     },
@@ -163,6 +156,7 @@ let fileManager = {
                         path: path,
                     },
                     success: function (data) {
+                        console.log(JSON.parse(data));
                         fileManager.update($itemList.data('path'));
                     }
                 });
@@ -207,6 +201,7 @@ let fileManager = {
                         url: fileManager.params.urls.ajax,
                         data: jQuery("#editForm").serialize(),
                         success: function (data) {
+                            console.log(JSON.parse(data));
                             fileManager.update($itemList.data('path'));
                         }
                     });
@@ -220,13 +215,13 @@ let fileManager = {
         jQuery('ul.context-menu-root').remove();
         if (fileManager.allowEdit) {
             $itemList.contextMenu({
-                selector: 'tr:not(.no-menu).dbclick-navigate',
+                selector: 'tr:not(.no-menu).click-navigate',
                 callback: contextMenu,
                 items: folderItems,
             });
         }
         $itemList.contextMenu({
-            selector: 'tr:not(.no-menu):not(.dbclick-navigate)',
+            selector: 'tr:not(.no-menu):not(.click-navigate)',
             callback: contextMenu,
             items: fileItems,
         });
@@ -245,26 +240,20 @@ let fileManager = {
             items: fileItems,
         });
 
-        jQuery('.dbclick-navigate').dblclick(function () {
+        jQuery('.click-navigate').click(function () {
             let path = jQuery(this).data('path');
             fileManager.update(path);
         });
-        jQuery('.dbclick-open').dblclick(function () {
+        jQuery('.click-open').click(function () {
             let path = jQuery(this).data('path');
             let filename = jQuery(this).data('filename');
             let a = jQuery("<a>")
-                .attr("href", fileManager.params.urls.base + path)
-                .attr("target", "_blank")
-                .attr("open", filename)
-                .appendTo("body");
+                .attr('href', fileManager.params.urls.ajax + '?action=' + fileManager.params.actions['downloadFile'] + '&path=' + path)
+                .attr('target', '_blank')
+                .attr('open', filename)
+                .appendTo('body');
             a[0].click();
             a.remove();
-        });
-        fileManager.$fileManager.find('tr td span[data-path]').click(function (event) {
-            if (jQuery(this).has('form').length === 0) {
-                let path = jQuery(this).data('path');
-                fileManager.update(path);
-            }
         });
         jQuery('#addFolder').click(function () {
             let path = jQuery(this).data('path');
@@ -295,6 +284,7 @@ let fileManager = {
                     url: fileManager.params.urls.ajax,
                     data: jQuery("#newFolderForm").serialize(),
                     success: function (data) {
+                        console.log(JSON.parse(data));
                         fileManager.update(path);
                     }
                 });
@@ -314,6 +304,7 @@ let fileManager = {
                 processData: false,
                 data: formData,
                 success: function (data) {
+                    console.log(JSON.parse(data));
                     fileManager.update(path);
                 }
             });

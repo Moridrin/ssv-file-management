@@ -107,25 +107,30 @@ class Ajax
         if (empty($folderName)) {
             $folderName = 'HOME';
         }
-        $items = $filesystem->listContents($encodedPath);
-        usort(
-            $items,
-            function ($a, $b) {
-                $aIsDir = $a['type'] === 'dir';
-                $bIsDir = $b['type'] === 'dir';
-                if (($aIsDir && $bIsDir) || (!$aIsDir && !$bIsDir)) {
-                    return strcmp($a['filename'], $b['filename']);
-                } elseif ($aIsDir) {
-                    return -1;
-                } elseif ($bIsDir) {
-                    return 1;
-                } else {
-                    return 0;
+        try {
+            $items = $filesystem->listContents($encodedPath);
+            usort(
+                $items,
+                function ($a, $b) {
+                    $aIsDir = $a['type'] === 'dir';
+                    $bIsDir = $b['type'] === 'dir';
+                    if (($aIsDir && $bIsDir) || (!$aIsDir && !$bIsDir)) {
+                        return strcmp($a['filename'], $b['filename']);
+                    } elseif ($aIsDir) {
+                        return -1;
+                    } elseif ($bIsDir) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
                 }
-            }
-        );
-        FolderView::show($folderName, $encodedPath, $items);
-        wp_die();
+            );
+            FolderView::show($folderName, $encodedPath, $items);
+            wp_die();
+        } catch (Exception $exception) {
+            ?><div class="notice notice-error error">Could not connect</div><?
+            wp_die();
+        }
     }
 }
 
@@ -135,6 +140,11 @@ foreach (get_class_methods(Ajax::class) as $method) {
     add_action('wp_ajax_' . $callable, [Ajax::class, $method]);
     if (get_option($callable . '_without_login', ($method === 'listFolder'))) {
         add_action('wp_ajax_nopriv_' . $callable, [Ajax::class, $method]);
+    } else {
+        add_action('wp_ajax_nopriv_' . $callable, function() {
+            SSV_Global::addError('You must login to perform this action');
+            wp_die(json_encode(['success' => false]));
+        });
     }
 }
 
