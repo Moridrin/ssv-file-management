@@ -73,13 +73,13 @@ class Ajax
      */
     public static function uploadFile()
     {
+        $fileData = file_get_contents($_FILES['file']['tmp_name']);
         BaseFunctions::checkParameters('path', 'fileName');
         $fileManager     = SSV_FileManager::connect();
         $path            = BaseFunctions::sanitize($_REQUEST['path'], 'text');
         $encodedPath     = BaseFunctions::encodeUnderscoreBase64($path);
         $fileName        = BaseFunctions::sanitize($_REQUEST['fileName'], 'text');
         $encodedFileName = BaseFunctions::encodeUnderscoreBase64($fileName);
-        $fileData        = file_get_contents($_FILES['file']['tmp_name']);
         $fileManager->put($encodedPath . DIRECTORY_SEPARATOR . $encodedFileName, $fileData, ['visibility' => AdapterInterface::VISIBILITY_PUBLIC]);
         wp_die(json_encode(['success' => true, 'path' => $path, 'encodedPath' => $encodedPath, 'fileName' => $fileName, 'encodedFileName' => $encodedFileName]));
     }
@@ -100,17 +100,12 @@ class Ajax
     public static function listFolder()
     {
         $filesystem  = SSV_FileManager::connect();
-        $path        = BaseFunctions::sanitize($_REQUEST['path'] ?? DIRECTORY_SEPARATOR, 'text');
+        $path        = BaseFunctions::sanitize($_REQUEST['path'] ?? SSV_FileManager::ROOT_FOLDER, 'text');
         $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
-        $pathArray   = explode(DIRECTORY_SEPARATOR, $encodedPath);
-        $folderName  = end($pathArray);
-        if (empty($folderName)) {
-            $folderName = 'HOME';
-        }
         try {
-            $items = $filesystem->listContents($encodedPath);
+            $encodedItems = $filesystem->listContents($encodedPath);
             usort(
-                $items,
+                $encodedItems,
                 function ($a, $b) {
                     $aIsDir = $a['type'] === 'dir';
                     $bIsDir = $b['type'] === 'dir';
@@ -125,10 +120,24 @@ class Ajax
                     }
                 }
             );
-            FolderView::show($folderName, $encodedPath, $items);
+            $items = [];
+            foreach ($encodedItems as $item) {
+                $itemName = BaseFunctions::decodeUnderscoreBase64($item['filename']);
+                if (!$itemName || !mb_check_encoding($itemName)) {
+                    continue; // Don't show files and folders that haven't been uploaded with this plugin.content/plugins/ssv-file-manager/Ajax.php on line 152
+                }
+                $items[] = [
+                    'type' => $item['type'],
+                    'path' => BaseFunctions::decodeUnderscoreBase64($item['path']),
+                    'name' => $itemName,
+                ];
+            }
+            FolderView::show($path, $items);
             wp_die();
         } catch (Exception $exception) {
-            ?><div class="notice notice-error error">Could not connect</div><?
+            ?>
+            <div class="notice notice-error error">Could not connect</div>
+            <?php
             wp_die();
         }
     }
@@ -141,10 +150,12 @@ foreach (get_class_methods(Ajax::class) as $method) {
     if (get_option($callable . '_without_login', ($method === 'listFolder'))) {
         add_action('wp_ajax_nopriv_' . $callable, [Ajax::class, $method]);
     } else {
-        add_action('wp_ajax_nopriv_' . $callable, function() {
+        add_action(
+            'wp_ajax_nopriv_' . $callable, function () {
             SSV_Global::addError('You must login to perform this action');
             wp_die(json_encode(['success' => false]));
-        });
+        }
+        );
     }
 }
 

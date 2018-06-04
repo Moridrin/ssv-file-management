@@ -16,8 +16,9 @@ define('SSV_FILE_MANAGER_URL', plugins_url() . '/ssv-file-manager/');
 
 class SSV_FileManager
 {
-    const PATH = SSV_FILE_MANAGER_PATH;
-    const URL  = SSV_FILE_MANAGER_URL;
+    public const PATH        = SSV_FILE_MANAGER_PATH;
+    public const URL         = SSV_FILE_MANAGER_URL;
+    public const ROOT_FOLDER = SSV_FILE_MANAGER_ROOT_FOLDER;
 
     const ADMIN_REFERER_OPTIONS = 'ssv_file_manager__admin_referer_options';
 
@@ -65,7 +66,6 @@ class SSV_FileManager
 
     public static function registerStyles()
     {
-        wp_register_style('ssv_dropzone', plugins_url() . '/ssv-file-manager/css/dropzone.css');
         wp_register_style('ssv_context_menu', plugins_url() . '/ssv-file-manager/css/jquery.contextMenu.css');
         wp_register_style('ssv_frontend_file_manager', plugins_url() . '/ssv-file-manager/css/ssv-file-manager.css');
 
@@ -74,7 +74,6 @@ class SSV_FileManager
 
     public static function registerScripts()
     {
-        wp_register_script('ssv_dropzone', plugins_url() . '/ssv-file-manager/js/dropzone.js', ['jquery']);
         wp_register_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
         wp_register_script('ssv_frontend_file_manager', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
         wp_localize_script(
