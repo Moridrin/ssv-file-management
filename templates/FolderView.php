@@ -30,16 +30,16 @@ class FolderView
             </colgroup>
             <?php
             if ($encodedPath !== self::ROOT_FOLDER) {
-                if ($encodedPath === $encodedFolderName) {
+                if ($encodedPath === $encodedFolderName) { // If the path equals the folder the parent folder is the root folder
                     $folderUp = self::ROOT_FOLDER;
                 } else {
-                    $folderUp = str_replace(DIRECTORY_SEPARATOR . $encodedFolderName, '', $encodedPath);
+                    $folderUp = BaseFunctions::decodeUnderscoreBase64(str_replace(DIRECTORY_SEPARATOR . $encodedFolderName, '', $encodedPath));
                 }
                 self::showFolderUp($folderUp);
             }
             foreach ($encodedItems as $encodedItem) {
                 $itemName = BaseFunctions::decodeUnderscoreBase64($encodedItem['filename']);
-                if ($itemName === false || mb_check_encoding($itemName) === false) {
+                if (!$itemName || !mb_check_encoding($itemName)) {
                     continue; // Don't show files and folders that haven't been uploaded with this plugin.
                 }
                 if ($encodedItem['type'] === 'dir') {
@@ -98,12 +98,12 @@ class FolderView
         <?php
     }
 
-    private static function showFolder(array $item, string $itemName)
+    private static function showFolder(array $encodedItem, string $itemName)
     {
         ?>
-        <tr class="dbclick-navigate folder" data-path="<?= BaseFunctions::escape($item['path'], 'attr') ?>">
+        <tr class="dbclick-navigate folder" data-path="<?= BaseFunctions::escape(BaseFunctions::decodeUnderscoreBase64($encodedItem['path']), 'attr') ?>">
             <td class="item-name" title="<?= BaseFunctions::escape($itemName, 'attr') ?>">
-                <span data-path="<?= BaseFunctions::escape($item['path'], 'attr') ?>">
+                <span data-path="<?= BaseFunctions::escape(BaseFunctions::decodeUnderscoreBase64($encodedItem['path']), 'attr') ?>">
                     <svg>
                         <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/folder.svg#folder"></use>
                     </svg>
@@ -119,10 +119,10 @@ class FolderView
         <?php
     }
 
-    private static function showFile(array $item, string $itemName)
+    private static function showFile(array $encodedItem, string $itemName)
     {
         ?>
-        <tr class="dbclick-open file" data-path="<?= BaseFunctions::escape($item['path'], 'attr') ?>" data-filename="<?= BaseFunctions::escape($itemName, 'attr') ?>">
+        <tr class="dbclick-open file" data-path="<?= BaseFunctions::escape(BaseFunctions::decodeUnderscoreBase64($encodedItem['path']), 'attr') ?>" data-filename="<?= BaseFunctions::escape($itemName, 'attr') ?>">
             <td class="item-name" title="<?= BaseFunctions::escape($itemName, 'attr') ?>">
                 <span>
                     <svg>
