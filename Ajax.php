@@ -44,7 +44,8 @@ class Ajax
         BaseFunctions::checkParameters('path');
         $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text');
         $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
-        SSV_FileManager::connect()->deleteDir($encodedPath);
+        $fileManager = SSV_FileManager::connect();
+        $fileManager->deleteDir($encodedPath);
         wp_die(json_encode(['success' => true, 'path' => $path, 'encodedPath' => $encodedPath]));
     }
 
@@ -73,14 +74,13 @@ class Ajax
      */
     public static function uploadFile()
     {
-        $fileData = file_get_contents($_FILES['file']['tmp_name']);
         BaseFunctions::checkParameters('path', 'fileName');
         $fileManager     = SSV_FileManager::connect();
         $path            = BaseFunctions::sanitize($_REQUEST['path'], 'text');
         $encodedPath     = BaseFunctions::encodeUnderscoreBase64($path);
         $fileName        = BaseFunctions::sanitize($_REQUEST['fileName'], 'text');
         $encodedFileName = BaseFunctions::encodeUnderscoreBase64($fileName);
-        $fileManager->put($encodedPath . DIRECTORY_SEPARATOR . $encodedFileName, $fileData, ['visibility' => AdapterInterface::VISIBILITY_PUBLIC]);
+        $fileManager->put($encodedPath . DIRECTORY_SEPARATOR . $encodedFileName, file_get_contents($_FILES['file']['tmp_name']), ['visibility' => AdapterInterface::VISIBILITY_PUBLIC]);
         wp_die(json_encode(['success' => true, 'path' => $path, 'encodedPath' => $encodedPath, 'fileName' => $fileName, 'encodedFileName' => $encodedFileName]));
     }
 

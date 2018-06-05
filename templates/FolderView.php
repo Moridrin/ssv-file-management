@@ -53,7 +53,10 @@ class FolderView
         if (current_user_can('manage_files')) {
             ?>
             <input type="file" id="fileUploadInput" style="display: none;" multiple>
-            <div id="dropTarget" style="cursor: pointer; border: 5px dashed #bbb; text-align: center; line-height: 150px;">Drop Files to Upload</div>
+            <div id="dropTarget" style="cursor: pointer; border: 5px dashed #bbb; text-align: center; line-height: 150px;">
+                <div>Drop Files to Upload</div>
+                <table id="uploadingFilesList" style="line-height: initial;"></table>
+            </div>
             <script>
                 (function () {
                     let fileUploadInput = document.getElementById('fileUploadInput');

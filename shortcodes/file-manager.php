@@ -11,13 +11,25 @@ function mp_ssv_file_manager_shortcode($attributes)
     wp_enqueue_script('ssv_frontend_file_manager');
     wp_enqueue_script('ssv_general_functions');
 
+    if (!is_array($attributes)) {
+        $attributes = [];
+    }
+    $attributes += [
+        'path'          => DIRECTORY_SEPARATOR,
+        'maxUploadSize' => BaseFunctions::getMaxUploadSize(),
+        'allowEdit'     => current_user_can('manage_files'),
+    ];
     ob_start();
-    $path = $_REQUEST['path'] ?? DIRECTORY_SEPARATOR;
     ?>
     <div id="fileManager"></div>
     <script>
         jQuery(document).ready(function () {
-            FileManager.init('fileManager', '<?= BaseFunctions::escape($path, 'js') ?>', <?= json_encode(current_user_can('manage_files')) ?>, <?= json_encode($attributes) ?>);
+            FileManager.init(
+                'fileManager',
+                '<?= BaseFunctions::escape($_REQUEST['path'] ?? $attributes['path'], 'js') ?>',
+                <?= BaseFunctions::escape($attributes['allowEdit'], 'js') ?>,
+                '<?= BaseFunctions::escape($attributes['maxUploadSize'], 'js') ?>'
+            );
         });
     </script>
     <?php
