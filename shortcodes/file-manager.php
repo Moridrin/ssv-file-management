@@ -27,7 +27,7 @@ function mp_ssv_file_manager_shortcode($attributes)
             FileManager.init(
                 'fileManager',
                 '<?= BaseFunctions::escape($_REQUEST['path'] ?? $attributes['path'], 'js') ?>',
-                <?= BaseFunctions::escape($attributes['allowEdit'], 'js') ?>,
+                '<?= BaseFunctions::escape($attributes['allowEdit'], 'js') ?>',
                 '<?= BaseFunctions::escape($attributes['maxUploadSize'], 'js') ?>'
             );
         });
