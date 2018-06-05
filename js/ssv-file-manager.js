@@ -35,10 +35,10 @@ let FileManager = {
                             contentType: false,
                             processData: false,
                             success: function (data) {
-                                console.log(JSON.parse(data));
+                                generalFunctions.ajaxResponse(data, true);
                                 --FileManager.uploader.fileCount;
                                 if (FileManager.uploader.fileCount === 0) {
-                                    FileManager.update(FileManager.currentPath)
+                                    FileManager.update()
                                 }
                             },
                             xhr: function () {
@@ -97,7 +97,7 @@ let FileManager = {
                                 itemUploadProgressBar.replaceWith(doneMessage);
                                 --FileManager.uploader.fileCount;
                                 if (FileManager.uploader.fileCount === 0) {
-                                    FileManager.update(document.getElementById('itemList').dataset['path'])
+                                    FileManager.update()
                                 }
                             },
                             xhr: function () {
@@ -171,6 +171,9 @@ let FileManager = {
     },
 
     update: function (path) {
+        if (path === undefined) {
+            path = FileManager.currentPath;
+        }
         jQuery.ajax({
             method: 'POST',
             url: FileManager.params.urls.ajax,
@@ -213,7 +216,10 @@ let FileManager = {
         }
         let contextMenu = function (key, data) {
             if (key === 'delete_file') {
-                let path = data.$trigger.find('[data-path]').data('path');
+                let path = data.$trigger.data('path');
+                if (path === undefined) {
+                    path = data.$trigger.parent().children().first().data('path');
+                }
                 jQuery.ajax({
                     type: "POST",
                     url: FileManager.params.urls.ajax,
@@ -222,28 +228,32 @@ let FileManager = {
                         path: path,
                     },
                     success: function () {
-                        FileManager.update(FileManager.currentPath);
+                        FileManager.update();
                     }
                 });
             } else if (key === 'delete_folder') {
                 let path = data.$trigger.data('path');
+                if (path === undefined) {
+                    path = data.$trigger.parent().children().first().data('path');
+                }
                 jQuery.ajax({
                     type: "POST",
                     url: FileManager.params.urls.ajax,
                     data: {
-                        action: FileManager.params.actions['deleteFolder'],
                         path: path,
+                        action: FileManager.params.actions['deleteFolder'],
                     },
                     success: function (data) {
-                        console.log(JSON.parse(data));
+                        generalFunctions.ajaxResponse(data, true);
                         FileManager.update($itemList.data('path'));
                     }
                 });
             } else if (key === 'open') {
-                let path = jQuery(this).data('path');
-                let filename = jQuery(this).data('filename');
-                if (filename === undefined) {
-                    return;
+                let path = data.$trigger.data('path');
+                let filename = data.$trigger.data('fileName');
+                if (path === undefined) {
+                    path = data.$trigger.parent().children().first().data('path');
+                    filename = data.$trigger.parent().children().first().data('fileName');
                 }
                 let a = jQuery("<a>")
                     .attr("href", FileManager.params.urls.base + path)
@@ -254,11 +264,15 @@ let FileManager = {
                 a[0].click();
                 a.remove();
             } else if (key === 'edit_file') {
+                let svgHtml = data.$trigger.parent().find('svg')[0].outerHTML;
+                console.log(svgHtml);
                 let oldPath = data.$trigger.data('path');
+                if (oldPath === undefined) {
+                    oldPath = data.$trigger.parent().children().first().data('path');
+                }
                 let row = '' +
                     '<tr id="edit-item">' +
-                    '   <td class="item-name">' +
-                    '       <svg id="edit-item-icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + FileManager.params.urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
+                    '   <td class="item-name">' + svgHtml +
                     '       <form id="editForm">' +
                     '           <input type="hidden" name="action" value="' + FileManager.params.actions['editFile'] + '">' +
                     '           <input type="hidden" name="oldPath" value="' + oldPath + '">' +
@@ -268,7 +282,7 @@ let FileManager = {
                     '   </td>' +
                     '   <td></td>' +
                     '</tr>';
-                data.$trigger.replaceWith(row);
+                data.$trigger.parent().replaceWith(row);
                 jQuery('#edit-item-icon').css('margin', '4px 10px');
                 let $newNameInput = jQuery("input[name='newPath']");
                 $newNameInput.focus();
@@ -280,8 +294,8 @@ let FileManager = {
                         url: FileManager.params.urls.ajax,
                         data: jQuery("#editForm").serialize(),
                         success: function (data) {
-                            console.log(JSON.parse(data));
-                            FileManager.update($itemList.data('path'));
+                            generalFunctions.ajaxResponse(data, true);
+                            FileManager.update();
                         }
                     });
                 });
@@ -291,16 +305,15 @@ let FileManager = {
             }
         };
 
-        jQuery('ul.context-menu-root').remove();
         if (FileManager.allowEdit) {
             $itemList.contextMenu({
-                selector: '.click-navigate',
+                selector: '.click-navigate:not(.no-menu)',
                 callback: contextMenu,
                 items: folderItems,
             });
         }
         $itemList.contextMenu({
-            selector: 'tr:not(.no-menu):not(.click-navigate)',
+            selector: '.click-open:not(.no-menu)',
             callback: contextMenu,
             items: fileItems,
         });
@@ -333,14 +346,13 @@ let FileManager = {
             a.remove();
         });
         jQuery('#addFolder').click(function () {
-            let path = jQuery(this).data('path');
             let row = '' +
                 '<tr id="new-folder">' +
                 '   <td class="item-name">' +
                 '       <svg><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + FileManager.params.urls.plugins + '/ssv-file-manager/images/folder.svg#folder"></use></svg>' +
                 '       <form id="newFolderForm">' +
                 '           <input type="hidden" name="action" value="' + FileManager.params.actions['createFolder'] + '">' +
-                '           <input type="hidden" name="path" value="' + path + '">' +
+                '           <input type="hidden" name="path" value="' + FileManager.currentPath + '">' +
                 '           <input type="text" name="newFolderName" style="height: 35px; width: calc(100% - 90px); float: left; margin: 0;">' +
                 '           <button type="submit" class="inline"><svg style="margin: 0; height: 15px; width: 15px;"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="' + FileManager.params.urls.plugins + '/ssv-file-manager/images/sprite_icons.svg#apply"></use></svg></button>' +
                 '       </form>' +
@@ -361,31 +373,11 @@ let FileManager = {
                     url: FileManager.params.urls.ajax,
                     data: jQuery("#newFolderForm").serialize(),
                     success: function (data) {
-                        console.log(JSON.parse(data));
-                        FileManager.update(path);
+                        generalFunctions.ajaxResponse(data, true);
+                        FileManager.update();
                     }
                 });
             });
         });
-        // jQuery('#uploadForm').submit(function (event) {
-        //     event.preventDefault();
-        //     let path = jQuery(this).data('path');
-        //     let formData = new FormData();
-        //     formData.append('action', FileManager.params.actions['uploadFile']);
-        //     formData.append('path', jQuery(this).data('path'));
-        //     formData.append('file', jQuery('#uploadFile').prop('files')[0]);
-        //     jQuery.ajax({
-        //         type: "POST",
-        //         url: FileManager.params.urls.ajax,
-        //         contentType: false,
-        //         processData: false,
-        //         data: formData,
-        //         success: function (data) {
-        //             console.log(JSON.parse(data));
-        //             FileManager.update(path);
-        //         }
-        //     });
-        // });
-        // jQuery('#uploadPath').val(this.$FileManager.children('.item-list').data('path'));
     },
 };

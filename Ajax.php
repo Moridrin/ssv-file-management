@@ -59,7 +59,7 @@ class Ajax
             $fileManager    = SSV_FileManager::connect();
             $oldPath        = BaseFunctions::sanitize($_REQUEST['oldPath'], 'text');
             $encodedOldPath = BaseFunctions::encodeUnderscoreBase64($oldPath);
-            $newPath        = BaseFunctions::sanitize($_REQUEST['oldPath'], 'text');
+            $newPath        = BaseFunctions::sanitize($_REQUEST['newPath'], 'text');
             $encodedNewPath = BaseFunctions::encodeUnderscoreBase64($newPath);
             $fileManager->rename($encodedOldPath, $encodedNewPath);
             wp_die(json_encode(['success' => true, 'oldPath' => $oldPath, 'encodedOldPath' => $encodedOldPath, 'newPath' => $newPath, 'encodedNewPath' => $encodedNewPath]));

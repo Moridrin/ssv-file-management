@@ -21,6 +21,7 @@ function mp_ssv_file_manager_shortcode($attributes)
     ];
     ob_start();
     ?>
+    <div id="messagesContainer"></div>
     <div id="fileManager"></div>
     <script>
         jQuery(document).ready(function () {

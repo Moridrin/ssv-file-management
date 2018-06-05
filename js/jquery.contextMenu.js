@@ -1408,6 +1408,7 @@
                     op.resize(opt.$menu);
                 }
                 // re-check disabled for each item
+
                 opt.$menu.children().each(function () {
                     var $item = $(this),
                         key = $item.data('contextMenuKey'),
