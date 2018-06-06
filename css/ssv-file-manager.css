@@ -73,24 +73,57 @@ button.inline {
   border-radius: 0;
   border: none; }
 
-#uploadingFilesList .cssLoader {
+.cssLoader {
   border: 2px solid transparent;
   /* Light grey */
   border-top: 2px solid #3498db;
   /* Blue */
   border-radius: 50%;
-  width: 25px;
-  height: 25px;
-  animation: spin 2s linear infinite;
+    width: 30px;
+    height: 30px;
+    animation: spin 2s linear infinite;
 }
 
 @keyframes spin {
   0% {
-    transform: rotate(0deg);
+      transform: rotate(0deg);
   }
   100% {
-    transform: rotate(360deg);
+      transform: rotate(360deg);
   }
+}
+
+#itemListContainer {
+    position: relative;
+}
+
+#itemListContainer .cssLoader {
+    top: calc(50% - 15px);
+    left: calc(50% - 15px);
+    position: absolute;
+}
+
+#itemListContainer.loading:after {
+    content: " ";
+    z-index: 10;
+    display: block;
+    position: absolute;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+#itemList:after {
+    border: 2px solid transparent;
+    /* Light grey */
+    border-top: 2px solid #3498db;
+    /* Blue */
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    animation: spin 2s linear infinite;
 }
 
 /*# sourceMappingURL=ssv-file-manager.css.map */

@@ -174,6 +174,7 @@ let FileManager = {
         if (path === undefined) {
             path = FileManager.currentPath;
         }
+        FileManager.showLoader();
         jQuery.ajax({
             method: 'POST',
             url: FileManager.params.urls.ajax,
@@ -188,9 +189,12 @@ let FileManager = {
                 if (!path.endsWith('/')) {
                     path += '/';
                 }
-                window.history.pushState('', '', '?path=' + path);
+                window.history.pushState('', '', '?path=' + encodeURIComponent(path));
                 FileManager.currentPath = path;
                 FileManager.loaded();
+            },
+            complete: function () {
+                FileManager.hideLoader();
             }
         });
     },
@@ -265,7 +269,6 @@ let FileManager = {
                 a.remove();
             } else if (key === 'edit_file') {
                 let svgHtml = data.$trigger.parent().find('svg')[0].outerHTML;
-                console.log(svgHtml);
                 let oldPath = data.$trigger.data('path');
                 if (oldPath === undefined) {
                     oldPath = data.$trigger.parent().children().first().data('path');
@@ -301,7 +304,6 @@ let FileManager = {
                 });
             } else {
                 let m = 'clicked: ' + key;
-                window.console && console.log(m) || alert(m);
             }
         };
 
@@ -379,5 +381,15 @@ let FileManager = {
                 });
             });
         });
+    },
+
+    showLoader: function () {
+        document.getElementById('itemListContainer').classList.add('loading');
+        document.getElementById('itemListLoader').style.display = 'block';
+    },
+
+    hideLoader: function () {
+        document.getElementById('itemListContainer').classList.remove('loading');
+        document.getElementById('itemListLoader').style.display = 'none';
     },
 };

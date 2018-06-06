@@ -14,6 +14,9 @@ class FolderView
     {
         $breadcrumbs   = array_filter(explode(DIRECTORY_SEPARATOR, $currentPath));
         $currentFolder = array_pop($breadcrumbs);
+        if (empty($currentFolder)) {
+            $currentFolder = "HOME";
+        }
         ?>
         <h1 id="currentFolderTitle" style="display: inline-block" data-path="<?= BaseFunctions::escape($currentPath, 'attr') ?>">
             <?= BaseFunctions::escape($currentFolder, 'html') ?>
@@ -26,29 +29,32 @@ class FolderView
         }
         ?>
         <br/>
-        <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" style="width: 100%;">
-            <colgroup>
-                <col width="auto"/>
-                <col width="36px"/>
-            </colgroup>
-            <?php
-            if ($currentPath !== SSV_FileManager::ROOT_FOLDER) {
-                if (empty($breadcrumbs)) {
-                    $folderUp = SSV_FileManager::ROOT_FOLDER;
-                } else {
-                    $folderUp = implode(DIRECTORY_SEPARATOR, $breadcrumbs);
+        <div id="itemListContainer">
+            <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" style="width: 100%;">
+                <colgroup>
+                    <col width="auto"/>
+                    <col width="36px"/>
+                </colgroup>
+                <?php
+                if ($currentPath !== SSV_FileManager::ROOT_FOLDER) {
+                    if (empty($breadcrumbs)) {
+                        $folderUp = SSV_FileManager::ROOT_FOLDER;
+                    } else {
+                        $folderUp = implode(DIRECTORY_SEPARATOR, $breadcrumbs);
+                    }
+                    self::showFolderUp($folderUp);
                 }
-                self::showFolderUp($folderUp);
-            }
-            foreach ($items as $item) {
-                if ($item['type'] === 'dir') {
-                    self::showFolder($item);
-                } else {
-                    self::showFile($item);
+                foreach ($items as $item) {
+                    if ($item['type'] === 'dir') {
+                        self::showFolder($item);
+                    } else {
+                        self::showFile($item);
+                    }
                 }
-            }
-            ?>
-        </table>
+                ?>
+            </table>
+            <div id="itemListLoader" class="cssLoader"></div>
+        </div>
         <?php
         if (current_user_can('manage_files')) {
             ?>

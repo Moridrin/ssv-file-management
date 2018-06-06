@@ -100,7 +100,7 @@ class Ajax
     public static function listFolder()
     {
         $filesystem  = SSV_FileManager::connect();
-        $path        = BaseFunctions::sanitize($_REQUEST['path'] ?? SSV_FileManager::ROOT_FOLDER, 'text');
+        $path        = htmlspecialchars_decode(BaseFunctions::sanitize($_REQUEST['path'] ?? SSV_FileManager::ROOT_FOLDER, 'text'));
         $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
         try {
             $encodedItems = $filesystem->listContents($encodedPath);
