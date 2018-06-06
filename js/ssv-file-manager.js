@@ -44,6 +44,7 @@ let FileManager = {
                             xhr: function () {
                                 let xhr = new window.XMLHttpRequest();
                                 xhr.upload.addEventListener("progress", function (event) {
+                                    console.log(event);
                                     if (event.lengthComputable) {
                                         if (event.loaded < item.size) {
                                             itemUploadProgressBar.setAttribute('value', event.loaded)
@@ -220,6 +221,7 @@ let FileManager = {
         }
         let contextMenu = function (key, data) {
             if (key === 'delete_file') {
+                FileManager.showLoader();
                 let path = data.$trigger.data('path');
                 if (path === undefined) {
                     path = data.$trigger.parent().children().first().data('path');
@@ -236,6 +238,7 @@ let FileManager = {
                     }
                 });
             } else if (key === 'delete_folder') {
+                FileManager.showLoader();
                 let path = data.$trigger.data('path');
                 if (path === undefined) {
                     path = data.$trigger.parent().children().first().data('path');
@@ -261,8 +264,6 @@ let FileManager = {
                 }
                 let a = jQuery("<a>")
                     .attr("href", FileManager.params.urls.base + path)
-                    // .attr("target", "_blank")
-                    .attr("download", "test.txt")
                     .attr("open", filename)
                     .appendTo("body");
                 a[0].click();
@@ -339,9 +340,10 @@ let FileManager = {
         });
         jQuery('.click-open').click(function () {
             let path = this.dataset.path;
+            console.log(path);
             let filename = this.dataset.filename;
             let a = jQuery("<a>")
-                .attr('href', FileManager.params.urls.ajax + '?action=' + FileManager.params.actions['downloadFile'] + '&path=' + path)
+                .attr('href', FileManager.params.urls.ajax + '?action=' + FileManager.params.actions['downloadFile'] + '&path=' + encodeURIComponent(path))
                 .attr('open', filename)
                 .appendTo('body');
             a[0].click();
