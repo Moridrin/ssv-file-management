@@ -13,52 +13,11 @@ let FileManager = {
 
         FileSelectHandler: function (event) {
             event.preventDefault();
+            document.getElementById('dropFilesLabel').style.display = 'none';
             let items = event.target.files;
-            let uploadingFilesList = document.getElementById('uploadingFilesList');
             if (items) {
                 for (let i = 0, item; item = items[i]; i++) {
-                    if (item.size > FileManager.maxUploadSize) {
-                        alert('File too large to upload.');
-                    } else {
-                        ++FileManager.uploader.fileCount;
-                        let itemUploadProgressBar = FileManager.uploader.createUploadProgressBar(item);
-                        uploadingFilesList.appendChild(FileManager.uploader.createUploadProgressRow(item, itemUploadProgressBar));
-                        let formData = new FormData();
-                        formData.append('action', FileManager.params.actions['uploadFile']);
-                        formData.append('path', FileManager.currentPath);
-                        formData.append('file', item);
-                        formData.append('fileName', item.name);
-                        jQuery.ajax({
-                            method: 'POST',
-                            url: FileManager.params.urls.ajax,
-                            data: formData,
-                            contentType: false,
-                            processData: false,
-                            success: function (data) {
-                                generalFunctions.ajaxResponse(data, true);
-                                --FileManager.uploader.fileCount;
-                                if (FileManager.uploader.fileCount === 0) {
-                                    FileManager.update()
-                                }
-                            },
-                            xhr: function () {
-                                let xhr = new window.XMLHttpRequest();
-                                xhr.upload.addEventListener("progress", function (event) {
-                                    console.log(event);
-                                    if (event.lengthComputable) {
-                                        if (event.loaded < item.size) {
-                                            itemUploadProgressBar.setAttribute('value', event.loaded)
-                                        } else {
-                                            let loader = document.createElement('div');
-                                            loader.setAttribute('class', 'cssLoader');
-                                            itemUploadProgressBar.replaceWith(loader);
-                                        }
-                                    }
-                                }, false);
-                                return xhr;
-                            },
-                        });
-                    }
+                    FileManager.uploader.uploadFile(item);
                 }
             } else {
                 items = event.dataTransfer.items;
@@ -70,54 +29,8 @@ let FileManager = {
 
         TraverseFileTree: function (item, path) {
             if (item.isFile) {
-                ++FileManager.uploader.fileCount;
-                let uploadingFilesList = document.getElementById('uploadingFilesList');
-                let itemUploadProgressBar = FileManager.uploader.createUploadProgressBar(item);
-                uploadingFilesList.appendChild(FileManager.uploader.createUploadProgressRow(item, itemUploadProgressBar));
                 item.file(function (file) {
-                    if (file.size > FileManager.maxUploadSize) {
-                        --FileManager.uploader.fileCount;
-                        let errorMessage = document.createElement('span');
-                        errorMessage.innerText = 'File too large';
-                        itemUploadProgressBar.replaceWith(errorMessage);
-                    } else {
-                        let formData = new FormData();
-                        formData.append('action', FileManager.params.actions['uploadFile']);
-                        formData.append('path', path);
-                        formData.append('file', file);
-                        formData.append('fileName', item.name);
-                        jQuery.ajax({
-                            method: 'POST',
-                            url: FileManager.params.urls.ajax,
-                            data: formData,
-                            contentType: false,
-                            processData: false,
-                            success: function () {
-                                let doneMessage = document.createElement('span');
-                                doneMessage.innerText = 'Done';
-                                itemUploadProgressBar.replaceWith(doneMessage);
-                                --FileManager.uploader.fileCount;
-                                if (FileManager.uploader.fileCount === 0) {
-                                    FileManager.update()
-                                }
-                            },
-                            xhr: function () {
-                                let xhr = new window.XMLHttpRequest();
-                                xhr.upload.addEventListener("progress", function (event) {
-                                    if (event.lengthComputable) {
-                                        if (event.loaded < item.size) {
-                                            itemUploadProgressBar.setAttribute('value', event.loaded)
-                                        } else {
-                                            let loader = document.createElement('div');
-                                            loader.setAttribute('class', 'cssLoader');
-                                            itemUploadProgressBar.replaceWith(loader);
-                                        }
-                                    }
-                                }, false);
-                                return xhr;
-                            },
-                        });
-                    }
+                    FileManager.uploader.uploadFile(file, path);
                 });
             } else if (item.isDirectory) {
                 let formData = new FormData();
@@ -142,24 +55,82 @@ let FileManager = {
             }
         },
 
+        uploadFile: function (item, path) {
+            console.log(path || FileManager.currentPath);
+
+            // Create Upload Row
+            let itemStateContainer = FileManager.uploader.createUploadProgressBar(item);
+            document.getElementById('uploadingFilesList').appendChild(FileManager.uploader.createUploadProgressRow(item, itemStateContainer));
+
+            // Check File Limitations
+            if (item.size > FileManager.maxUploadSize) {
+                itemStateContainer.innerHTML = '<span title="File too large">&#10060;</span>';
+                return;
+            }
+
+            // Add file to queue
+            ++FileManager.uploader.fileCount;
+
+            // Create Form Data
+            let formData = new FormData();
+            formData.append('action', FileManager.params.actions['uploadFile']);
+            formData.append('path', path || FileManager.currentPath);
+            formData.append('file', item);
+            formData.append('fileName', item.name);
+
+            // Ajax Call
+            jQuery.ajax({
+                method: 'POST',
+                url: FileManager.params.urls.ajax,
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    // Finished
+                    generalFunctions.ajaxResponse(data, true);
+                    itemStateContainer.innerHTML = '<span class="checkMark"></span>';
+                    --FileManager.uploader.fileCount;
+                    if (FileManager.uploader.fileCount === 0) {
+                        FileManager.update()
+                    }
+                },
+                xhr: function () {
+                    // Progress
+                    let xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function (event) {
+                        if (event.lengthComputable) {
+                            if (event.loaded < item.size) {
+                                itemStateContainer.firstElementChild.setAttribute('value', event.loaded)
+                            } else {
+                                itemStateContainer.innerHTML = '<div class="cssLoader"></div>';
+                            }
+                        }
+                    }, false);
+                    return xhr;
+                },
+            });
+        },
+
         createUploadProgressBar: function (item) {
             let progressBar = document.createElement('progress');
             progressBar.setAttribute('value', '0');
             progressBar.setAttribute('max', item.size);
-            return progressBar
+            let tdProgress = document.createElement('td');
+            tdProgress.setAttribute('class', 'progressBarContainer');
+            tdProgress.setAttribute('style', 'padding: 0 10px;');
+            tdProgress.appendChild(progressBar);
+            return tdProgress;
         },
 
-        createUploadProgressRow: function (item, progressBar) {
-            if (progressBar === undefined) {
-                progressBar = FileManager.uploader.createUploadProgressBar(item);
+        createUploadProgressRow: function (item, progressBarContainer) {
+            if (progressBarContainer === undefined) {
+                progressBarContainer = FileManager.uploader.createUploadProgressBar(item);
             }
             let tr = document.createElement('tr');
             let tdName = document.createElement('td');
             tdName.innerText = item.name;
             tr.appendChild(tdName);
-            let tdProgress = document.createElement('td');
-            tdProgress.appendChild(progressBar);
-            tr.appendChild(tdProgress);
+            tr.appendChild(progressBarContainer);
             return tr;
         },
     },
@@ -217,6 +188,9 @@ let FileManager = {
         } else {
             fileItems = {
                 open: {name: 'Open', icon: 'fa-external-link-alt'},
+            };
+            folderItems = {
+                no_actions: {name: 'No Actions'},
             };
         }
         let contextMenu = function (key, data) {
@@ -303,31 +277,25 @@ let FileManager = {
                         }
                     });
                 });
-            } else {
-                let m = 'clicked: ' + key;
             }
         };
 
-        if (FileManager.allowEdit) {
-            $itemList.contextMenu({
-                selector: '.click-navigate:not(.no-menu)',
-                callback: contextMenu,
-                items: folderItems,
-            });
-        }
+        $itemList.contextMenu({
+            selector: '.click-navigate:not(.no-menu)',
+            callback: contextMenu,
+            items: folderItems,
+        });
         $itemList.contextMenu({
             selector: '.click-open:not(.no-menu)',
             callback: contextMenu,
             items: fileItems,
         });
-        if (FileManager.allowEdit) {
-            FileManager.$fileManager.contextMenu({
-                selector: '.folder-actions',
-                trigger: 'left',
-                callback: contextMenu,
-                items: folderItems,
-            });
-        }
+        FileManager.$fileManager.contextMenu({
+            selector: '.folder-actions',
+            trigger: 'left',
+            callback: contextMenu,
+            items: folderItems,
+        });
         FileManager.$fileManager.contextMenu({
             selector: '.item-actions',
             trigger: 'left',
@@ -340,7 +308,6 @@ let FileManager = {
         });
         jQuery('.click-open').click(function () {
             let path = this.dataset.path;
-            console.log(path);
             let filename = this.dataset.filename;
             let a = jQuery("<a>")
                 .attr('href', FileManager.params.urls.ajax + '?action=' + FileManager.params.actions['downloadFile'] + '&path=' + encodeURIComponent(path))

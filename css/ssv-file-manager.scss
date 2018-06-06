@@ -103,8 +103,8 @@ button.inline {
   border: 2px solid transparent; /* Light grey */
   border-top: 2px solid #3498db; /* Blue */
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 25px;
+  height: 25px;
   animation: spin 2s linear infinite;
 }
 
@@ -145,4 +145,25 @@ button.inline {
   width: 25px;
   height: 25px;
   animation: spin 2s linear infinite;
+}
+
+.checkMark {
+  display: inline-block;
+
+  &:after {
+    /*Add another block-level blank space*/
+    content: '';
+    display: block;
+
+    /*Make it a small rectangle so the border will create an L-shape*/
+    width: 6px;
+    height: 12px;
+
+    /*Add a white border on the bottom and left, creating that 'L' */
+    border: solid #000;
+    border-width: 0 2px 2px 0;
+
+    /*Rotate the L 45 degrees to turn it into a checkmark*/
+    transform: rotate(45deg);
+  }
 }

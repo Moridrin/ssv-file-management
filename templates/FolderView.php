@@ -60,8 +60,8 @@ class FolderView
             ?>
             <input type="file" id="fileUploadInput" style="display: none;" multiple>
             <div id="dropTarget" style="cursor: pointer; border: 5px dashed #bbb; text-align: center; line-height: 150px;">
-                <div>Drop Files to Upload</div>
-                <table id="uploadingFilesList" style="line-height: initial;"></table>
+                <div id="dropFilesLabel">Drop Files to Upload</div>
+                <table id="uploadingFilesList" style="line-height: initial; margin: 0; padding: 0;"></table>
             </div>
             <script>
                 (function () {
