@@ -56,8 +56,6 @@ let FileManager = {
         },
 
         uploadFile: function (item, path) {
-            console.log(path || FileManager.currentPath);
-
             // Create Upload Row
             let itemStateContainer = FileManager.uploader.createUploadProgressBar(item);
             document.getElementById('uploadingFilesList').appendChild(FileManager.uploader.createUploadProgressRow(item, itemStateContainer));
