@@ -85,7 +85,7 @@ let FileManager = {
                 processData: false,
                 success: function (data) {
                     // Finished
-                    generalFunctions.ajaxResponse(data, true);
+                    generalFunctions.ajaxResponse(data);
                     itemStateContainer.innerHTML = '<span class="checkMark"></span>';
                     --FileManager.uploader.fileCount;
                     if (FileManager.uploader.fileCount === 0) {
@@ -176,7 +176,7 @@ let FileManager = {
         let folderItems = {};
         if (FileManager.allowEdit) {
             fileItems = {
-                open: {name: 'Open', icon: 'fa-external-link-alt'},
+                download: {name: 'Download', icon: 'fa-download'},
                 edit_file: {name: 'Edit', icon: 'fa-edit'},
                 delete_file: {name: 'Delete', icon: 'fa-trash'},
             };
@@ -185,7 +185,7 @@ let FileManager = {
             };
         } else {
             fileItems = {
-                open: {name: 'Open', icon: 'fa-external-link-alt'},
+                download: {name: 'Download', icon: 'fa-download'},
             };
             folderItems = {
                 no_actions: {name: 'No Actions'},
@@ -223,11 +223,11 @@ let FileManager = {
                         action: FileManager.params.actions['deleteFolder'],
                     },
                     success: function (data) {
-                        generalFunctions.ajaxResponse(data, true);
+                        generalFunctions.ajaxResponse(data);
                         FileManager.update($itemList.data('path'));
                     }
                 });
-            } else if (key === 'open') {
+            } else if (key === 'download') {
                 let path = data.$trigger.data('path');
                 let filename = data.$trigger.data('fileName');
                 if (path === undefined) {
@@ -235,9 +235,9 @@ let FileManager = {
                     filename = data.$trigger.parent().children().first().data('fileName');
                 }
                 let a = jQuery("<a>")
-                    .attr("href", FileManager.params.urls.base + path)
-                    .attr("open", filename)
-                    .appendTo("body");
+                    .attr('href', FileManager.params.urls.ajax + '?action=' + FileManager.params.actions['downloadFile'] + '&path=' + encodeURIComponent(path))
+                    .attr('download', filename)
+                    .appendTo('body');
                 a[0].click();
                 a.remove();
             } else if (key === 'edit_file') {
@@ -270,7 +270,7 @@ let FileManager = {
                         url: FileManager.params.urls.ajax,
                         data: jQuery("#editForm").serialize(),
                         success: function (data) {
-                            generalFunctions.ajaxResponse(data, true);
+                            generalFunctions.ajaxResponse(data);
                             FileManager.update();
                         }
                     });
@@ -284,7 +284,7 @@ let FileManager = {
             items: folderItems,
         });
         $itemList.contextMenu({
-            selector: '.click-open:not(.no-menu)',
+            selector: '.click-download:not(.no-menu)',
             callback: contextMenu,
             items: fileItems,
         });
@@ -304,12 +304,12 @@ let FileManager = {
         jQuery('.click-navigate').click(function () {
             FileManager.update(this.dataset.path);
         });
-        jQuery('.click-open').click(function () {
+        jQuery('.click-download').click(function () {
             let path = this.dataset.path;
             let filename = this.dataset.filename;
             let a = jQuery("<a>")
                 .attr('href', FileManager.params.urls.ajax + '?action=' + FileManager.params.actions['downloadFile'] + '&path=' + encodeURIComponent(path))
-                .attr('open', filename)
+                .attr('download', filename)
                 .appendTo('body');
             a[0].click();
             a.remove();
@@ -342,7 +342,7 @@ let FileManager = {
                     url: FileManager.params.urls.ajax,
                     data: jQuery("#newFolderForm").serialize(),
                     success: function (data) {
-                        generalFunctions.ajaxResponse(data, true);
+                        generalFunctions.ajaxResponse(data);
                         FileManager.update();
                     }
                 });

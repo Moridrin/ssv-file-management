@@ -18,19 +18,19 @@ class FolderView
             $currentFolder = "HOME";
         }
         ?>
-        <h1 id="currentFolderTitle" style="display: inline-block" data-path="<?= BaseFunctions::escape($currentPath, 'attr') ?>">
+        <h1 id="currentFolderTitle" style="display: inline-block; width: 100%;" data-path="<?= BaseFunctions::escape($currentPath, 'attr') ?>">
             <?= BaseFunctions::escape($currentFolder, 'html') ?>
-        </h1>
-        <?php
-        if (current_user_can('manage_files')) {
-            ?>
-            <button id="addFolder" class="button button-primary" style="float: right">Add Folder</button>
             <?php
-        }
-        ?>
+            if (current_user_can('manage_files')) {
+                ?>
+                <button id="addFolder" class="button btn button-primary" style="float: right">Add Folder</button>
+                <?php
+            }
+            ?>
+        </h1>
         <br/>
         <div id="itemListContainer">
-            <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" style="width: 100%;">
+            <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" style="width: 100%; margin: 10px 0;">
                 <colgroup>
                     <col width="auto"/>
                     <col width="36px"/>
@@ -144,7 +144,7 @@ class FolderView
         ?>
         <tr class="file">
             <td
-                    class="click-open item-name"
+                    class="click-download item-name"
                     title="<?= BaseFunctions::escape($item['name'], 'attr') ?>"
                     data-path="<?= BaseFunctions::escape($item['path'], 'attr') ?>"
                     data-filename="<?= BaseFunctions::escape($item['name'], 'attr') ?>"
