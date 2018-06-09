@@ -16,10 +16,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-require_once 'vendor/autoload.php';
 require_once 'general/general.php';
-require_once 'SSV_FileManager.php';
-require_once 'shortcodes/file-manager.php';
-// require_once 'options/options.php';
-require_once 'Ajax.php';
-require_once 'templates/FolderView.php';
+if (is_admin()) {
+    require_once 'Options.php';
+} else {
+    require_once 'vendor/autoload.php';
+    require_once 'SSV_FileManager.php';
+    require_once 'shortcodes/file-manager.php';
+    require_once 'Ajax.php';
+    require_once 'templates/FolderView.php';
+}
