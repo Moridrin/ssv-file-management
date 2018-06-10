@@ -154,14 +154,16 @@ let FileManager = {
                 options: FileManager.options,
             },
             success: function (data) {
-                FileManager.$fileManager.html(data);
-                let path = document.getElementById('currentFolderTitle').dataset.path;
-                if (!path.endsWith('/')) {
-                    path += '/';
+                if (generalFunctions.ajaxResponse(data, true)) {
+                    FileManager.$fileManager.html(data);
+                    let path = document.getElementById('currentFolderTitle').dataset.path;
+                    if (!path.endsWith('/')) {
+                        path += '/';
+                    }
+                    window.history.pushState('', '', '?path=' + encodeURIComponent(path));
+                    FileManager.currentPath = path;
+                    FileManager.loaded();
                 }
-                window.history.pushState('', '', '?path=' + encodeURIComponent(path));
-                FileManager.currentPath = path;
-                FileManager.loaded();
             },
             complete: function () {
                 FileManager.hideLoader();
@@ -174,22 +176,21 @@ let FileManager = {
 
         let fileItems = {};
         let folderItems = {};
-        if (FileManager.allowEdit) {
-            fileItems = {
-                download: {name: 'Download', icon: 'fa-download'},
-                edit_file: {name: 'Edit', icon: 'fa-edit'},
-                delete_file: {name: 'Delete', icon: 'fa-trash'},
-            };
-            folderItems = {
-                delete_folder: {name: 'Delete', icon: 'fa-trash'},
-            };
-        } else {
-            fileItems = {
-                download: {name: 'Download', icon: 'fa-download'},
-            };
-            folderItems = {
-                no_actions: {name: 'No Actions'},
-            };
+        if (FileManager.params.rights['download']) {
+            fileItems.download = {name: 'Download', icon: 'fa-download'};
+        }
+        if (FileManager.params.rights['edit']) {
+            fileItems.edit_file = {name: 'Edit', icon: 'fa-edit'};
+        }
+        if (FileManager.params.rights['delete']) {
+            fileItems.delete_file = {name: 'Delete', icon: 'fa-trash'};
+            folderItems.delete_folder = {name: 'Delete', icon: 'fa-trash'};
+        }
+        if (Object.keys(fileItems).length === 0) {
+            fileItems.no_actions = {name: 'No Actions'};
+        }
+        if (Object.keys(folderItems).length === 0) {
+            folderItems.no_actions = {name: 'No Actions'};
         }
         let contextMenu = function (key, data) {
             if (key === 'delete_file') {
@@ -227,7 +228,7 @@ let FileManager = {
                         FileManager.update($itemList.data('path'));
                     }
                 });
-            } else if (key === 'download') {
+            } else if (key === 'download' && FileManager.params.rights['download']) {
                 let path = data.$trigger.data('path');
                 let filename = data.$trigger.data('fileName');
                 if (path === undefined) {
@@ -304,16 +305,19 @@ let FileManager = {
         jQuery('.click-navigate').click(function () {
             FileManager.update(this.dataset.path);
         });
-        jQuery('.click-download').click(function () {
-            let path = this.dataset.path;
-            let filename = this.dataset.filename;
-            let a = jQuery("<a>")
-                .attr('href', FileManager.params.urls.ajax + '?action=' + FileManager.params.actions['downloadFile'] + '&path=' + encodeURIComponent(path))
-                .attr('download', filename)
-                .appendTo('body');
-            a[0].click();
-            a.remove();
-        });
+        if (FileManager.params.rights['download']) {
+            jQuery('.click-download').click(function () {
+                let path = this.dataset.path;
+                let filename = this.dataset.filename;
+                let a = jQuery("<a>")
+                    .attr('href', FileManager.params.urls.ajax + '?action=' + FileManager.params.actions['downloadFile'] + '&path=' + encodeURIComponent(path))
+                    .attr('download', filename)
+                    .appendTo('body');
+                console.log(a[0]);
+                a[0].click();
+                a.remove();
+            });
+        }
         jQuery('#addFolder').click(function () {
             let row = '' +
                 '<tr id="new-folder">' +

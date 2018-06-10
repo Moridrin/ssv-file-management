@@ -17,12 +17,9 @@ if (!defined('ABSPATH')) {
 }
 
 require_once 'general/general.php';
-if (is_admin()) {
-    require_once 'Options.php';
-} else {
-    require_once 'vendor/autoload.php';
-    require_once 'SSV_FileManager.php';
-    require_once 'shortcodes/file-manager.php';
-    require_once 'Ajax.php';
-    require_once 'templates/FolderView.php';
-}
+require_once 'Ajax.php';
+require_once 'SSV_FileManager.php';
+require_once 'vendor/autoload.php';
+require_once 'templates/FolderView.php';
+require_once 'Options.php';
+require_once 'shortcodes/file-manager.php';

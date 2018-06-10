@@ -20,20 +20,11 @@ function mp_ssv_file_manager_shortcode($attributes)
         'allowEdit'     => current_user_can('manage_files'),
     ];
     $currentPath   = $_REQUEST['path'] ?? $attributes['path'];
-    $breadcrumbs   = array_filter(explode(DIRECTORY_SEPARATOR, $currentPath));
-    $currentFolder = array_pop($breadcrumbs);
-    if (empty($currentFolder)) {
-        $currentFolder = "HOME";
-    }
     ob_start();
     ?>
     <div id="messagesContainer"></div>
     <div id="fileManager">
-        <h1 id="currentFolderTitle" style="display: inline-block" data-path="<?= BaseFunctions::escape($currentPath, 'attr') ?>"></h1>
-        <button id="addFolder" class="button button-primary" style="float: right">Add Folder</button>
-        <br>
-        <div id="itemListContainer" class="loading">
-            <table id="itemList" class="item-list" cellspacing="0" cellpadding="0" style="width: 100%; height: 200px;"></table>
+        <div id="itemListContainer" class="loading" style="min-height: 100px;">
             <div id="itemListLoader" class="cssLoader"></div>
         </div>
     </div>

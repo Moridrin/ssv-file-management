@@ -3,6 +3,8 @@
 namespace mp_ssv_file_manager\templates;
 
 use mp_general\base\BaseFunctions;
+use mp_general\base\SSV_Global;
+use mp_ssv_file_manager\Options\Options;
 use mp_ssv_file_manager\SSV_FileManager;
 
 define('SSV_FILE_MANAGER_ROOT_FOLDER', get_option('ssv_file_manager__root_folder', DIRECTORY_SEPARATOR));
@@ -12,6 +14,11 @@ class FolderView
 
     public static function show(string $currentPath, array $items)
     {
+        if (!(current_user_can(SSV_FileManager::RIGHTS['view']) || (!is_user_logged_in() && get_option(Options::OPTIONS['view']['id'])))) {
+            SSV_Global::addError('You do not have enough rights to view these files');
+            SSV_Global::showErrors();
+            return;
+        }
         $breadcrumbs   = array_filter(explode(DIRECTORY_SEPARATOR, $currentPath));
         $currentFolder = array_pop($breadcrumbs);
         if (empty($currentFolder)) {
@@ -21,7 +28,7 @@ class FolderView
         <h1 id="currentFolderTitle" style="display: inline-block; width: 100%;" data-path="<?= BaseFunctions::escape($currentPath, 'attr') ?>">
             <?= BaseFunctions::escape($currentFolder, 'html') ?>
             <?php
-            if (current_user_can('manage_files')) {
+            if (current_user_can(SSV_FileManager::RIGHTS['upload'])) {
                 ?>
                 <button id="addFolder" class="button btn button-primary" style="float: right">Add Folder</button>
                 <?php
@@ -56,7 +63,7 @@ class FolderView
             <div id="itemListLoader" class="cssLoader"></div>
         </div>
         <?php
-        if (current_user_can('manage_files')) {
+        if (current_user_can(SSV_FileManager::RIGHTS['upload']) || (!is_user_logged_in() && get_option(Options::OPTIONS['upload']['id']))) {
             ?>
             <input type="file" id="fileUploadInput" style="display: none;" multiple>
             <div id="dropTarget" style="cursor: pointer; border: 5px dashed #bbb; text-align: center; line-height: 150px;">

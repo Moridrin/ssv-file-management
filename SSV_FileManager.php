@@ -6,6 +6,7 @@ use Aws\S3\S3Client;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use League\Flysystem\Filesystem;
 use mp_general\base\SSV_Global;
+use mp_ssv_file_manager\Options\Options;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -22,10 +23,20 @@ class SSV_FileManager
 
     const ADMIN_REFERER_OPTIONS = 'ssv_file_manager__admin_referer_options';
 
+    const RIGHTS = [
+        'view'     => 'mp_ssv_file_manager__can_view',
+        'download' => 'mp_ssv_file_manager__can_download',
+        'upload'   => 'mp_ssv_file_manager__can_upload',
+        'edit'     => 'mp_ssv_file_manager__can_edit',
+        'delete'   => 'mp_ssv_file_manager__can_delete',
+    ];
+
     public static function setup()
     {
         $role = get_role('administrator');
-        $role->add_cap('manage_files');
+        foreach (self::RIGHTS as $right) {
+            $role->add_cap($right);
+        }
     }
 
     public static function deactivate()
@@ -74,6 +85,10 @@ class SSV_FileManager
 
     public static function registerScripts()
     {
+        $rights = [];
+        foreach (self::RIGHTS as $key => $right) {
+            $rights[$key] = current_user_can($right) || (!is_user_logged_in() && get_option(Options::OPTIONS[$key]['id']));
+        }
         wp_register_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
         wp_register_script('ssv_frontend_file_manager', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
         wp_localize_script(
@@ -86,6 +101,7 @@ class SSV_FileManager
                     'base'     => 'https://essf-social.ams3.digitaloceanspaces.com/',
                     'basePath' => ABSPATH,
                 ],
+                'rights'  => $rights,
                 'actions' => Ajax::$callables,
             ]
         );
