@@ -18,7 +18,7 @@ class Ajax
 
     public static function createFolder()
     {
-        if (current_user_can('mp_ssv_file_manager__can_upload') || (!is_user_logged_in() && get_option('ssv_file_manager__guests_can_upload'))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['upload']) || (!is_user_logged_in() && get_option(Options::OPTIONS['upload']['id']))) {
             BaseFunctions::checkParameters('path', 'newFolderName');
             $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text') . DIRECTORY_SEPARATOR . BaseFunctions::sanitize($_REQUEST['newFolderName'], 'text');
             $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
@@ -32,7 +32,7 @@ class Ajax
 
     public static function deleteFile()
     {
-        if (current_user_can('mp_ssv_file_manager__can_delete') || (!is_user_logged_in() && get_option('ssv_file_manager__guests_can_delete'))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['delete']) || (!is_user_logged_in() && get_option(Options::OPTIONS['delete']['id']))) {
             BaseFunctions::checkParameters('path');
             try {
                 $fileManager = SSV_FileManager::connect();
@@ -52,7 +52,7 @@ class Ajax
 
     public static function deleteFolder()
     {
-        if (current_user_can('mp_ssv_file_manager__can_delete') || (!is_user_logged_in() && get_option('ssv_file_manager__guests_can_delete'))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['delete']) || (!is_user_logged_in() && get_option(Options::OPTIONS['delete']['id']))) {
             BaseFunctions::checkParameters('path');
             $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text');
             $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
@@ -70,7 +70,7 @@ class Ajax
      */
     public static function editFile()
     {
-        if (current_user_can('mp_ssv_file_manager__can_edit') || (!is_user_logged_in() && get_option('ssv_file_manager__guests_can_edit'))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['edit']) || (!is_user_logged_in() && get_option(Options::OPTIONS['edit']['id']))) {
             BaseFunctions::checkParameters('oldPath', 'newPath');
             try {
                 $fileManager    = SSV_FileManager::connect();
