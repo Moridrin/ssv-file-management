@@ -132,6 +132,27 @@ class Ajax
         }
     }
 
+    /**
+     * @throws Exception
+     */
+    public static function openFile()
+    {
+        if (current_user_can(SSV_FileManager::RIGHTS['download']) || (!is_user_logged_in() && get_option(Options::OPTIONS['download']['id']))) {
+            BaseFunctions::checkParameters('path');
+            $fileManager = SSV_FileManager::connect();
+            $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text');
+            $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
+            $file        = $fileManager->get($encodedPath);
+            $fileName    = BaseFunctions::decodeUnderscoreBase64($file->getMetadata()['filename']);
+            header('Content-Disposition: inline; filename="' . $fileName . '"');
+            header('Content-type: ' . $file->getMimetype());
+            echo $file->read();
+            die();
+        } else {
+            throw new Exception('You are not allowed to open files');
+        }
+    }
+
     public static function listFolder()
     {
         if (current_user_can(SSV_FileManager::RIGHTS['view']) || (!is_user_logged_in() && get_option(Options::OPTIONS['view']['id']))) {

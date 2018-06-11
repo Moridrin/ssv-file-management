@@ -308,10 +308,9 @@ let FileManager = {
         if (FileManager.params.rights['download']) {
             jQuery('.click-download').click(function () {
                 let path = this.dataset.path;
-                let filename = this.dataset.filename;
                 let a = jQuery("<a>")
-                    .attr('href', FileManager.params.urls.ajax + '?action=' + FileManager.params.actions['downloadFile'] + '&path=' + encodeURIComponent(path))
-                    .attr('download', filename)
+                    .attr('href', FileManager.params.urls.ajax + '?action=' + FileManager.params.actions['openFile'] + '&path=' + encodeURIComponent(path))
+                    .attr('target', '_blank')
                     .appendTo('body');
                 console.log(a[0]);
                 a[0].click();
