@@ -14,7 +14,7 @@ class FolderView
 
     public static function show(string $currentPath, array $items)
     {
-        if (!(current_user_can(SSV_FileManager::RIGHTS['view']) || (!is_user_logged_in() && get_option(Options::OPTIONS['view']['id'])))) {
+        if (!(current_user_can(SSV_FileManager::RIGHTS['view']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['view']['id'])))) {
             SSV_Global::addError('You do not have enough rights to view these files');
             SSV_Global::showErrors();
             return;
@@ -63,7 +63,7 @@ class FolderView
             <div id="itemListLoader" class="cssLoader"></div>
         </div>
         <?php
-        if (current_user_can(SSV_FileManager::RIGHTS['upload']) || (!is_user_logged_in() && get_option(Options::OPTIONS['upload']['id']))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['upload']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['upload']['id']))) {
             ?>
             <input type="file" id="fileUploadInput" style="display: none;" multiple>
             <div id="dropTarget" style="cursor: pointer; border: 5px dashed #bbb; text-align: center; line-height: 150px;">
@@ -106,7 +106,7 @@ class FolderView
         >
             <td class="item-name" title="Parent Folder">
                 <span data-path="<?= BaseFunctions::escape($path, 'attr') ?>">
-                    <svg>
+                    <svg style="fill: <?= BaseFunctions::escape(get_option(Options::OPTIONS['appearance']['folder_color']['id']), 'attr') ?>">
                         <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/folder-up.svg#folder-up"></use>
                     </svg>
                     <span>..</span>
@@ -131,7 +131,7 @@ class FolderView
                     data-path="<?= BaseFunctions::escape($item['path'], 'attr') ?>"
             >
                 <span>
-                    <svg>
+                    <svg style="fill: <?= BaseFunctions::escape(get_option(Options::OPTIONS['appearance']['folder_color']['id']), 'attr') ?>">
                         <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/folder.svg#folder"></use>
                     </svg>
                     <span class="title"><?= BaseFunctions::escape($item['name'], 'html') ?></span>
@@ -157,7 +157,7 @@ class FolderView
                     data-filename="<?= BaseFunctions::escape($item['name'], 'attr') ?>"
             >
                 <span>
-                    <svg style="fill: #057D9F;">
+                    <svg style="fill: <?= BaseFunctions::escape(get_option(Options::OPTIONS['appearance']['file_color']['id']), 'attr') ?>">
                         <use xlink:href="<?= plugins_url() ?>/ssv-file-manager/images/sprite_icons.svg#article"></use>
                     </svg>
                     <span class="title"><?= BaseFunctions::escape($item['name'], 'html') ?></span>

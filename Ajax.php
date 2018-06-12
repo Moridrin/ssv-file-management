@@ -18,7 +18,7 @@ class Ajax
 
     public static function createFolder()
     {
-        if (current_user_can(SSV_FileManager::RIGHTS['upload']) || (!is_user_logged_in() && get_option(Options::OPTIONS['upload']['id']))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['upload']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['upload']['id']))) {
             BaseFunctions::checkParameters('path', 'newFolderName');
             $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text') . DIRECTORY_SEPARATOR . BaseFunctions::sanitize($_REQUEST['newFolderName'], 'text');
             $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
@@ -32,7 +32,7 @@ class Ajax
 
     public static function deleteFile()
     {
-        if (current_user_can(SSV_FileManager::RIGHTS['delete']) || (!is_user_logged_in() && get_option(Options::OPTIONS['delete']['id']))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['delete']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['delete']['id']))) {
             BaseFunctions::checkParameters('path');
             try {
                 $fileManager = SSV_FileManager::connect();
@@ -52,7 +52,7 @@ class Ajax
 
     public static function deleteFolder()
     {
-        if (current_user_can(SSV_FileManager::RIGHTS['delete']) || (!is_user_logged_in() && get_option(Options::OPTIONS['delete']['id']))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['delete']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['delete']['id']))) {
             BaseFunctions::checkParameters('path');
             $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text');
             $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
@@ -70,7 +70,7 @@ class Ajax
      */
     public static function editFile()
     {
-        if (current_user_can(SSV_FileManager::RIGHTS['edit']) || (!is_user_logged_in() && get_option(Options::OPTIONS['edit']['id']))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['edit']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['edit']['id']))) {
             BaseFunctions::checkParameters('oldPath', 'newPath');
             try {
                 $fileManager    = SSV_FileManager::connect();
@@ -95,7 +95,7 @@ class Ajax
      */
     public static function uploadFile()
     {
-        if (current_user_can(SSV_FileManager::RIGHTS['upload']) || (!is_user_logged_in() && get_option(Options::OPTIONS['upload']['id']))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['upload']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['upload']['id']))) {
             BaseFunctions::checkParameters('path', 'fileName');
             $fileManager     = SSV_FileManager::connect();
             $path            = BaseFunctions::sanitize($_REQUEST['path'], 'text');
@@ -115,7 +115,7 @@ class Ajax
      */
     public static function downloadFile()
     {
-        if (current_user_can(SSV_FileManager::RIGHTS['download']) || (!is_user_logged_in() && get_option(Options::OPTIONS['download']['id']))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['download']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['download']['id']))) {
             BaseFunctions::checkParameters('path');
             $fileManager = SSV_FileManager::connect();
             $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text');
@@ -127,8 +127,6 @@ class Ajax
             die();
         } else {
             throw new Exception('You are not allowed to download files');
-            // SSV_Global::addError('You are not allowed to download files');
-            // wp_die(json_encode(['success' => false]));
         }
     }
 
@@ -137,7 +135,7 @@ class Ajax
      */
     public static function openFile()
     {
-        if (current_user_can(SSV_FileManager::RIGHTS['download']) || (!is_user_logged_in() && get_option(Options::OPTIONS['download']['id']))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['download']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['download']['id']))) {
             BaseFunctions::checkParameters('path');
             $fileManager = SSV_FileManager::connect();
             $path        = BaseFunctions::sanitize($_REQUEST['path'], 'text');
@@ -155,7 +153,7 @@ class Ajax
 
     public static function listFolder()
     {
-        if (current_user_can(SSV_FileManager::RIGHTS['view']) || (!is_user_logged_in() && get_option(Options::OPTIONS['view']['id']))) {
+        if (current_user_can(SSV_FileManager::RIGHTS['view']) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests']['view']['id']))) {
             $filesystem  = SSV_FileManager::connect();
             $path        = htmlspecialchars_decode(BaseFunctions::sanitize($_REQUEST['path'] ?? SSV_FileManager::ROOT_FOLDER, 'text'));
             $encodedPath = BaseFunctions::encodeUnderscoreBase64($path);
@@ -193,7 +191,7 @@ class Ajax
                 wp_die();
             } catch (Exception $exception) {
                 ?>
-                <div class="notice notice-error error">Could not connect</div>
+                <div class="<?= BaseFunctions::escape(get_option(Options::OPTIONS['appearance']['error_classes']['id']), 'attr') ?>"><p>Could not connect</p></div>
                 <?php
                 wp_die();
             }

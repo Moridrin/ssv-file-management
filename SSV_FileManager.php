@@ -37,6 +37,9 @@ class SSV_FileManager
         foreach (self::RIGHTS as $right) {
             $role->add_cap($right);
         }
+        update_option(Options::OPTIONS['appearance']['error_classes']['id'], 'notice notice-error error');
+        update_option(Options::OPTIONS['appearance']['folder_color']['id'], '#FFB300');
+        update_option(Options::OPTIONS['appearance']['file_color']['id'], '#057D9F');
     }
 
     public static function deactivate()
@@ -52,24 +55,19 @@ class SSV_FileManager
 
     public static function connect(): Filesystem
     {
-        $dos_key       = 'YDLOAAYXNUNET3DTV6D2';
-        $dos_secret    = 'a3tpq+qh1n2Noo9tGJ0yXpphrCDAaatkQ/uj71g85m4';
-        $dos_endpoint  = 'https://ams3.digitaloceanspaces.com';
-        $dos_container = 'essf-social';
-
         $client = S3Client::factory(
             [
                 'credentials' => [
-                    'key'    => $dos_key,
-                    'secret' => $dos_secret,
+                    'key'    => get_option(Options::OPTIONS['connection']['key']['id']),
+                    'secret' => get_option(Options::OPTIONS['connection']['secret']['id']),
                 ],
-                'endpoint'    => $dos_endpoint,
+                'endpoint'    => get_option(Options::OPTIONS['connection']['endpoint']['id']),
                 'region'      => '',
                 'version'     => 'latest',
             ]
         );
 
-        $connection = new AwsS3Adapter($client, $dos_container);
+        $connection = new AwsS3Adapter($client, get_option(Options::OPTIONS['connection']['container']['id']));
         $filesystem = new Filesystem($connection);
 
         return $filesystem;
@@ -87,7 +85,7 @@ class SSV_FileManager
     {
         $rights = [];
         foreach (self::RIGHTS as $key => $right) {
-            $rights[$key] = current_user_can($right) || (!is_user_logged_in() && get_option(Options::OPTIONS[$key]['id']));
+            $rights[$key] = current_user_can($right) || (!is_user_logged_in() && get_option(Options::OPTIONS['guests'][$key]['id']));
         }
         wp_register_script('ssv_context_menu', plugins_url() . '/ssv-file-manager/js/jquery.contextMenu.js', ['jquery']);
         wp_register_script('ssv_frontend_file_manager', plugins_url() . '/ssv-file-manager/js/ssv-file-manager.js', ['jquery']);
