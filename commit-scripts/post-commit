@@ -1,0 +1,9 @@
+#!/bin/sh
+echo 'post-commit hook started'
+status=`git status --porcelain`
+hasUncommittedChanges="${#status}"
+if ! echo $hasUncommittedChanges | grep --quiet -w '0'; then
+	message=`cat .git/COMMIT_EDITMSG`
+	git add --all
+	git commit --amend --reset-author -m "$message" --no-verify
+fi

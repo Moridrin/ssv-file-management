@@ -2,8 +2,8 @@
 /**
  * Plugin Name: SSV File Management
  * Plugin URI: http://moridrin.com/ssv-file-manager
- * Description: This is a plugin to let the members manage files in the frontend of the Sportal.
- * Version: 1.1.12
+ * Description: This is a plugin to let the members manage files in the frontend.
+ * Version: 1.0.0
  * Author: Jeroen Berkvens
  * Author URI: http://nl.linkedin.com/in/jberkvens/
  * License: WTFPL

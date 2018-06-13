@@ -1,0 +1,34 @@
+#!/bin/sh
+echo 'commit-msg hook started'
+if grep --quiet 'version and readme updated' "$1"; then
+	return
+fi
+if grep --quiet '[no-script]' "$1"; then
+	return
+fi
+tac "$1" > tmpCommitMessage
+
+sed -i "18i[newline]" readme.txt
+sed -i 's/\[newline\]//' readme.txt;
+
+oldVersionLine=`sed '6q;d' ssv-file-manager.php`
+versionLineStart=`echo "${oldVersionLine}" | grep -o '[^ \* ].*.[^0-9]'`
+currentVersion=`echo "${oldVersionLine}" | sed 's/.[^0-9]//g'`
+newVersion=`expr $currentVersion + 1`
+sed -i "6s/${oldVersionLine}\$/ ${versionLineStart}${newVersion}/g" ssv-file-manager.php
+
+while IFS= read -r line; do
+	if ! echo $line | grep --quiet '^#'; then
+		if [ ${#line} -gt 0 ]; then
+			sed -i "18i${line}" readme.txt
+		fi
+	fi
+done < tmpCommitMessage
+rm tmpCommitMessage
+
+newVersionStart=`echo $versionLineStart | sed 's/Version: //g'`
+sed -i "18i= ${newVersionStart}${newVersion} =" readme.txt
+
+while grep '\*\*' readme.txt; do
+	sed -i 's/\*\*/  \*/' readme.txt;
+done
