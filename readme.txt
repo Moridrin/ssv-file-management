@@ -15,7 +15,7 @@ The best way is to add an issue on GitHub (https://github.com/Moridrin/ssv-file-
 The best way is to add an issue on GitHub (https://github.com/Moridrin/ssv-file-manager/issues). But you can also send an email to J.Berkvens@Moridrin.com (the lead developer).
 
 ### Where can I find the RoadMap?
-The best way is to add an issue on GitHub (https://github.com/Moridrin/ssv-file-manager/issues). But you can also send an email to J.Berkvens@Moridrin.com (the lead developer).
+https://moridrin.com/plugins/ssv-file-manager/roadmap
 
 ## Changelog
 ### 1.0.0
